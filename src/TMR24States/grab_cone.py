@@ -15,7 +15,7 @@ class GrabCone(smach.State):
         takeoff_pub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
         land_pub = rospy.Publisher("/bebop/land", Empty, queue_size=10)
         continue_sub = rospy.Subscriber("/state_machine/continue_mission", Empty, self.callback)
-        rospy.sleep(0.1)
+        rospy.sleep(1)
 
         rospy.loginfo("Sending land to drone")
         land_pub.publish(Empty())

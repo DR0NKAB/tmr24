@@ -21,7 +21,7 @@ class GoToAruco(smach.State):
         camera_pub = rospy.Publisher("/bebop/camera_control", Twist, queue_size=10)
         movement_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
         aruco_sub = rospy.Subscriber("/aruco_detect/detections", FiducialTransform, self.callback)
-        rospy.sleep(0.1)
+        rospy.sleep(1)
 
         rospy.loginfo("Setting camera angle to ", self.camera_angle)
         camera_msg = Twist()

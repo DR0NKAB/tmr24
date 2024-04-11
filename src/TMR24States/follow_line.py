@@ -17,7 +17,7 @@ class FollowLine(smach.State):
         movement_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
         camera_pub = rospy.Publisher("/bebop/camera_control", Twist, queue_size=10)
         line_error_sub = rospy.Subscriber("/line_follower/line_error", Float64, self.callback)
-        rospy.sleep(0.1)
+        rospy.sleep(1)
 
         camera_angle = -90
         rospy.loginfo("Setting camera angle to ", camera_angle)
