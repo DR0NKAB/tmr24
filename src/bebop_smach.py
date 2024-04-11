@@ -16,15 +16,15 @@ if __name__ == "__main__":
 
         with sm:
             smach.StateMachine.add( "START", Start(), 
-                                   transitions={"succeeded":"GOTOARUCO",
+                                   transitions={"succeeded":"GOTOARUCO_0",
                                                 "failed":"FINISH"} )
             
-            smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200), 
+            smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200, -45), 
                                    transitions={"succeeded":"GOTOARUCO_200",
-                                                "skipped":"GRAB",
+                                                "skipped":"GRABCONE",
                                                 "failed":"FINISH"} )
             
-            smach.StateMachine.add( "GOTOARUCO_200", GoToAruco(200, -1), 
+            smach.StateMachine.add( "GOTOARUCO_200", GoToAruco(200, -1, -45), 
                                    transitions={"succeeded":"GRABCONE",
                                                 "skipped":"FINISH",
                                                 "failed":"FINISH"} )
@@ -33,7 +33,7 @@ if __name__ == "__main__":
                                    transitions={"succeeded":"GOTOARUCO_600",
                                                 "failed":"FINISH"} )
             
-            smach.StateMachine.add( "GOTOARUCO_600", GoToAruco(600, -1), 
+            smach.StateMachine.add( "GOTOARUCO_600", GoToAruco(600, -1, -45), 
                                    transitions={"succeeded":"FOLLOWLINE_1",
                                                 "skipped":"FINISH",
                                                 "failed":"FINISH"} )
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                                    transitions={"succeeded":"GOTOARUCO_900",
                                                 "failed":"FINISH"} )
             
-            smach.StateMachine.add( "GOTOARUCO_900", GoToAruco(900, -1), 
+            smach.StateMachine.add( "GOTOARUCO_900", GoToAruco(900, -1, -45), 
                                    transitions={"succeeded":"DROPCONE",
                                                 "skipped":"FINISH",
                                                 "failed":"FINISH"} )

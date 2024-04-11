@@ -56,19 +56,19 @@ def cone_detect():
                     cv2.circle(frame_orig, (cX, cY), 5, (0, 255, 255), 5) # esto dibuja un circulo en el centro del contorno
                     frame_orig = cv2.drawContours(frame_orig, [c], -1, (255,255,0), 3) # esto dibuja el contorno en el frame
 
-                    print("Las coordenadas del cono son : ", cX," , ", cY, " con area : ", cv2.contourArea(c))
+                    rospy.loginfo(f"Las coordenadas del centro del cono son {cX}, {cY} con area : {cv2.contourArea(c)}")
                     msg = Cone()
                     msg.horizontal_error = frame.shape[1] - cX
                     msg.vertical_error = frame.shape[0] - cY
                     cone_pub.publish(msg)
                     image_pub.publish(bridge.cv2_to_imgmsg(frame_orig, encoding="bgr8"))
                 else:
-                    print("Contorno no valido")
+                    rospy.loginfo("Contorno no valido")
             else:
-                print("No se encontro el cono")
+                rospy.loginfo("No se encontro el cono")
             rospy.Rate(30).sleep() # comentado, procesa tan rapido como puede, si no, a la frecuencia especificada
         else:
-            print("Esperando a recibir una imagen")
+            rospy.loginfo("Esperando a recibir una imagen")
             rospy.Rate(1).sleep()
 
 if __name__ == "__main__":

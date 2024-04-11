@@ -22,11 +22,11 @@ class CrossWindow(smach.State):
         rospy.sleep(1)
 
         camera_angle = 0
-        rospy.loginfo("Setting camera angle to ", camera_angle)
+        rospy.loginfo(f"Setting camera angle to {camera_angle}")
         camera_msg = Twist()
         camera_msg.angular.y = camera_angle
         camera_pub.publish(camera_msg)
-        rospy.loginfo("Command was : \n %s", str(camera_msg))
+        rospy.loginfo(f"Command was : {camera_msg}")
         rospy.loginfo("Waiting for camera to be moved")
         rospy.sleep(3)
 
@@ -40,7 +40,7 @@ class CrossWindow(smach.State):
                 movement_msg = Twist()
                 movement_msg.linear.x = 0.2
                 movement_pub.publish(movement_msg)
-                rospy.loginfo("Command was : \n %s", str(movement_msg))
+                rospy.loginfo(f"Command was : {movement_msg}")
                 rospy.loginfo("Waiting for window to be crossed")
                 rospy.sleep(2)
                 return "succeeded"
@@ -55,7 +55,7 @@ class CrossWindow(smach.State):
                     movement_msg.linear.z = kp_v * self.current_v_error
 
                 movement_pub.publish(movement_msg)
-                rospy.loginfo("Command was : \n %s", str(movement_msg))
+                rospy.loginfo(f"Command was : {movement_msg}")
             rospy.sleep(tiempo_muestreo)
 
         return "failed"

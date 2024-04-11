@@ -17,25 +17,25 @@ class GoToAruco(smach.State):
             self.fiducial_transform = message
 
     def execute(self, userdata):
-        rospy.loginfo("GOTOARUCO state executing with aruco id : ", self.current_aruco_id, " , skipping if aruco id : ", self.next_aruco_id, " is found")
+        rospy.loginfo(f"GOTOARUCO state executing with aruco id : {self.current_aruco_id} skipping if aruco id : {self.next_aruco_id} is found")
         camera_pub = rospy.Publisher("/bebop/camera_control", Twist, queue_size=10)
         movement_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
         aruco_sub = rospy.Subscriber("/aruco_detect/detections", FiducialTransform, self.callback)
         rospy.sleep(1)
 
-        rospy.loginfo("Setting camera angle to ", self.camera_angle)
+        rospy.loginfo(f"Setting camera angle to {self.camera_angle}")
         camera_msg = Twist()
         camera_msg.angular.y = self.camera_angle
         camera_pub.publish(camera_msg)
-        rospy.loginfo("Command was : \n %s", str(camera_msg))
+        rospy.loginfo(f"Command was {camera_msg}")
         rospy.loginfo("Waiting for camera to be moved")
         rospy.sleep(3)
 
-        rospy.loginfo("Searching for aruco ...")
+        rospy.loginfo(f"Searching for aruco {self.current_aruco_id} or {self.next_aruco_id}")
         while not rospy.is_shutdown():
             if self.fiducial_transform is not None:
                 aruco_sub.unregister()
-                rospy.loginfo("Found aruco ", self.fiducial_transform.fiducial_id)
+                rospy.loginfo(f"Found aruco {self.fiducial_transform.fiducial_id}")
                 
                 rospy.loginfo("Sending command to go to Aruco")
                 time_to_aruco = 5
@@ -46,7 +46,7 @@ class GoToAruco(smach.State):
                 movement_msg.linear.x = (forward_dist / time_to_aruco) * gain_vel_to_twist 
                 movement_msg.linear.y = (left_dist / time_to_aruco) * gain_vel_to_twist 
                 movement_pub.publish(movement_msg)
-                rospy.loginfo("Command was : \n %s", str(movement_msg))
+                rospy.loginfo(f"Command was {movement_msg}")
 
                 rospy.loginfo("Waiting for command to be completed")
                 rospy.sleep(time_to_aruco)
