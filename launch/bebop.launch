@@ -1,0 +1,72 @@
+<launch>
+
+    <!-- BEBOP -->
+    <arg name="namespace" default="bebop" />
+    <arg name="ip" default="192.168.42.1" />
+    <arg name="drone_type" default="bebop1" /> <!-- available drone types: bebop1, bebop2 -->
+    <arg name="config_file" default="$(find bebop_driver)/config/defaults.yaml" />
+    <arg name="camera_info_url" default="package://bebop_driver/data/$(arg drone_type)_camera_calib.yaml" />
+    <group ns="$(arg namespace)">
+        <node pkg="bebop_driver" name="bebop_driver" type="bebop_driver_node" output="screen">
+            <param name="camera_info_url" value="$(arg camera_info_url)" />
+            <param name="bebop_ip" value="$(arg ip)" />
+            <rosparam command="load" file="$(arg config_file)" />
+        </node>
+        <include file="$(find bebop_description)/launch/description.launch" />
+    </group>
+
+    <!-- ARUCO DETECT -->
+    <arg name="camera" default="/bebop"/> <!-- namespace for camera input -->
+    <arg name="image" default="image_raw"/>
+    <arg name="transport" default="compressed"/>
+    <arg name="fiducial_len" default="0.15"/> <!-- aruco marker size in m -->
+    <arg name="dictionary" default="7"/> <!-- aruco dictionary, 7 = 5x5 1000 -->
+    <arg name="do_pose_estimation" default="true"/> 
+    <arg name="vis_msgs" default="false"/> <!-- If vis_msgs set to true, pose estimation will be published with ROS standard vision_msgs -->
+    <arg name="ignore_fiducials" default="" /> <!-- arucos a ignorar -->
+    <arg name="fiducial_len_override" default="" />
+    <arg name="verbose" default="false"/>
+
+    <node pkg="aruco_detect" name="aruco_detect"
+        type="aruco_detect" output="screen" respawn="false">
+        <param name="image_transport" value="$(arg transport)"/>
+        <param name="publish_images" value="true" />
+        <param name="fiducial_len" value="$(arg fiducial_len)"/>
+        <param name="dictionary" value="$(arg dictionary)"/>
+        <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+        <param name="vis_msgs" value="$(arg vis_msgs)"/>
+        <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+        <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+        <param name="verbose" value="$(arg verbose)"/>
+        <remap from="camera/compressed" to="$(arg camera)/$(arg image)/$(arg transport)"/>
+        <remap from="camera_info" to="$(arg camera)/camera_info"/>
+    </node>
+
+    <!-- WINDOW DETECT -->
+    <node pkg="tmr24" type="window_detect.py" name="window_detect" output="screen">
+        <remap from="camera/compressed" to="/bebop/image_raw/compressed"/>
+    </node>
+
+    <!-- CONE DETECT -->
+    <node pkg="tmr24" type="cone_detect.py" name="cone_detect" output="screen">
+        <remap from="camera/compressed" to="/bebop/image_raw/compressed"/>
+    </node>
+
+    <!-- display nodes for every process suscribed to a camera -->
+
+    <!-- IMAGE VIEW ARUCOS -->
+    <node pkg="image_view" type="image_view" name="image_view_arucos" output="screen">
+        <remap from="image" to="/fiducial_images"/>
+    </node>
+
+    <!-- IMAGE VIEW WINDOWS -->
+    <node pkg="image_view" type="image_view" name="image_view_windows" output="screen">
+        <remap from="image" to="/window_detect/detections"/>
+    </node>
+
+    <!-- IMAGE VIEW CONE -->
+    <node pkg="image_view" type="image_view" name="image_view_cone" output="screen">
+        <remap from="image" to="/cone_detect/detections"/>
+    </node>
+
+</launch>

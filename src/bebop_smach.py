@@ -1,0 +1,65 @@
+import rospy 
+import smach
+from TMR24States.start import Start
+from TMR24States.go_to_aruco import GoToAruco
+from TMR24States.grab_cone import GrabCone
+from TMR24States.follow_line import FollowLine
+from TMR24States.cross_window import CrossWindow
+from TMR24States.drop_cone import DropCone
+from TMR24States.finish import Finish
+
+if __name__ == "__main__":
+    try : 
+        rospy.init_node("state_machine")
+        rospy.loginfo("Starting state machine node")
+        sm = smach.StateMachine(outcomes=["completed"])
+
+        with sm:
+            smach.StateMachine.add( "START", Start(), 
+                                   transitions={"succeeded":"GOTOARUCO",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200), 
+                                   transitions={"succeeded":"GOTOARUCO_200",
+                                                "skipped":"GRAB",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "GOTOARUCO_200", GoToAruco(200, -1), 
+                                   transitions={"succeeded":"GRABCONE",
+                                                "skipped":"FINISH",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "GRABCONE", GrabCone(), 
+                                   transitions={"succeeded":"GOTOARUCO_600",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "GOTOARUCO_600", GoToAruco(600, -1), 
+                                   transitions={"succeeded":"FOLLOWLINE_1",
+                                                "skipped":"FINISH",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "FOLLOWLINE_1", FollowLine(), 
+                                   transitions={"succeeded":"CROSSWINDOW",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "CROSSWINDOW", CrossWindow(), 
+                                   transitions={"succeeded":"FOLLOWLINE_2",
+                                                "failed":"FINISH"} )
+
+            smach.StateMachine.add( "FOLLOWLINE_2", FollowLine(), 
+                                   transitions={"succeeded":"GOTOARUCO_900",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "GOTOARUCO_900", GoToAruco(900, -1), 
+                                   transitions={"succeeded":"DROPCONE",
+                                                "skipped":"FINISH",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "DROPCONE", DropCone(), 
+                                   transitions={"succeeded":"FINISH",
+                                                "failed":"FINISH"} )
+
+        result = sm.execute()
+        rospy.loginfo("State machine node ended with result : ", result)
+    except rospy.ROSInterruptException:
+        pass
