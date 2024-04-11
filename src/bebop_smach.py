@@ -58,6 +58,9 @@ if __name__ == "__main__":
             smach.StateMachine.add( "DROPCONE", DropCone(), 
                                    transitions={"succeeded":"FINISH",
                                                 "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "FINISH", Finish(), 
+                                   transitions={"ended":"completed"} )
 
         result = sm.execute()
         rospy.loginfo("State machine node ended with result : ", result)

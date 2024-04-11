@@ -9,7 +9,7 @@ class Start(smach.State):
     def execute(self, userdata):
         rospy.loginfo("START state executing")
         takeoff_pub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
-        rospy.sleep(0.1)
+        rospy.sleep(1)
 
         while not rospy.is_shutdown():
             if takeoff_pub.get_num_connections() > 0:

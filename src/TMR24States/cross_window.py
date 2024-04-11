@@ -19,7 +19,7 @@ class CrossWindow(smach.State):
         movement_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
         camera_pub = rospy.Publisher("/bebop/camera_control", Twist, queue_size=10)
         window_error_sub = rospy.Subscriber("/window_detect/detections", Window, self.callback)
-        rospy.sleep(0.1)
+        rospy.sleep(1)
 
         camera_angle = 0
         rospy.loginfo("Setting camera angle to ", camera_angle)
