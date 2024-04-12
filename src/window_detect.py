@@ -1,4 +1,5 @@
 import rospy
+import cv2
 from tmr24.msg import Window
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import Image
@@ -21,7 +22,7 @@ def window_detect():
     window_pub = rospy.Publisher("window_detect/windows", Window, queue_size=10)
     detection_pub = rospy.Publisher("window_detect/detections", Image, queue_size=10)
     rospy.Subscriber("camera/compressed", CompressedImage, callback)
-    rospy.sleep(0.1)
+    rospy.sleep(1)
 
     model = YOLO("ventanas.pt")
     bridge = CvBridge()

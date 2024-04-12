@@ -20,7 +20,7 @@ def cone_detect():
     cone_pub = rospy.Publisher("cone_detect/cone_pos", Cone, queue_size=10)
     image_pub = rospy.Publisher("cone_detect/detections", Image, queue_size=10)
     rospy.Subscriber("camera/compressed", CompressedImage, callback)
-    rospy.sleep(0.1)
+    rospy.sleep(1)
 
     bridge = CvBridge()
     hsv_min = [20, 50, 0]

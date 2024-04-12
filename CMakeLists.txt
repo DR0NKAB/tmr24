@@ -166,6 +166,8 @@ catkin_install_python(PROGRAMS
   src/cone_detect.py
   src/bebop_smach.py
   src/movement.py
+  src/state_test.py
+  src/vel_publisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
