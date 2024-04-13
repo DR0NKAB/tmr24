@@ -52,6 +52,10 @@
         <remap from="camera/compressed" to="/bebop/image_raw/compressed"/>
     </node>
 
+    <!-- VELOCITY SENDER -->
+    <node pkg="tmr24" type="vel_publisher.py" name="vel_publisher" output="screen">
+    </node>
+
     <!-- display nodes for every process suscribed to a camera -->
 
     <!-- IMAGE VIEW ARUCOS -->

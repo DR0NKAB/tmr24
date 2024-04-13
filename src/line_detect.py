@@ -27,6 +27,7 @@ def line_detect():
     hsv_max = [30, 200, 255]
 
     rospy.loginfo("Deteccion de linea iniciada")
+    rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         if latest_message is not None:
             frame_orig = bridge.compressed_imgmsg_to_cv2(latest_message, desired_encoding="bgr8")
@@ -38,10 +39,10 @@ def line_detect():
             
             image_pub.publish(bridge.cv2_to_imgmsg(frame, encoding="bgr8"))
 
-            rospy.Rate(30).sleep() # comentado, procesa tan rapido como puede, si no, a la frecuencia especificada
+            rate.sleep() # comentado, procesa tan rapido como puede, si no, a la frecuencia especificada
         else:
             rospy.loginfo("Esperando a recibir una imagen")
-            rospy.Rate(1).sleep()
+            rospy.sleep(1)
 
 if __name__ == "__main__":
     try:

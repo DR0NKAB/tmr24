@@ -15,7 +15,7 @@ class Start(smach.State):
             if takeoff_pub.get_num_connections() > 0:
                 break
             rospy.loginfo("Waiting for drone to be connected")
-            rospy.Rate(1).sleep()
+            rospy.sleep(1)
 
         if not rospy.is_shutdown():
             rospy.loginfo("Sending Take Off")

@@ -12,8 +12,9 @@ class Finish(smach.State):
         rospy.sleep(1)
 
         rospy.loginfo("Sending continuous land messages")
+        rate = rospy.Rate(30)
         while not rospy.is_shutdown():
             land_pub.publish(Empty())
-            rospy.Rate(30).sleep()
+            rate.sleep()
 
         return "ended"

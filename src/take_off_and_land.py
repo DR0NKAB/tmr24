@@ -15,14 +15,14 @@ def take_off_and_land():
 	take_off_publisher.publish(Empty())
 	
 	rospy.loginfo("Esperando 10 segundos")
-	rospy.sleep(30)
+	rospy.sleep(10)
 
 	rospy.loginfo("Aterrizando")
 	land_publisher.publish(Empty())
 
 	while not rospy.is_shutdown():
-		rospy.loginfo("All Done, waiting")
-		rospy.Rate(1).sleep()
+		rospy.loginfo("Terminado, esperando")
+		rospy.sleep(1)
 
 if __name__ == "__main__":
 	try:

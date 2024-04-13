@@ -28,6 +28,7 @@ def window_detect():
     bridge = CvBridge()
     rospy.loginfo("Window detection node started correctly")
 
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         if latest_message is not None:
             class_to_detect = 0
@@ -66,10 +67,10 @@ def window_detect():
                 
             window_pub.publish(mensaje)
             detection_pub.publish( bridge.cv2_to_imgmsg(windows.plot(), encoding="bgr8") )
-            #rospy.Rate(10).sleep() # While commented, it will process as fast as it can, otherwise, at the frecuency provided
+            rate.sleep() # While commented, it will process as fast as it can, otherwise, at the frecuency provided
         else:
             print("Waiting for an image to be received")
-            rospy.Rate(1).sleep()
+            rospy.sleep(1)
 
 if __name__ == "__main__":
     try:

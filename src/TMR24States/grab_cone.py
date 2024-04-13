@@ -24,7 +24,7 @@ class GrabCone(smach.State):
             if self.continue_mission:
                 break
             rospy.loginfo("Waiting for message to continue")
-            rospy.Rate(1).sleep()
+            rospy.sleep(1)
 
         if not rospy.is_shutdown():
             rospy.loginfo("Sending Takeoff to continue")

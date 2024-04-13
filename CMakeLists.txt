@@ -168,6 +168,8 @@ catkin_install_python(PROGRAMS
   src/movement.py
   src/state_test.py
   src/vel_publisher.py
+  src/line_detect.py
+  src/joy_controller.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

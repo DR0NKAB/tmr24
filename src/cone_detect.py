@@ -27,6 +27,7 @@ def cone_detect():
     hsv_max = [30, 200, 255]
 
     rospy.loginfo("Deteccion de conos iniciada")
+    rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         if latest_message is not None:
             frame_orig = bridge.compressed_imgmsg_to_cv2(latest_message, desired_encoding="bgr8")
@@ -66,10 +67,10 @@ def cone_detect():
                     rospy.loginfo("Contorno no valido")
             else:
                 rospy.loginfo("No se encontro el cono")
-            rospy.Rate(30).sleep() # comentado, procesa tan rapido como puede, si no, a la frecuencia especificada
+            rate.sleep() # comentado, procesa tan rapido como puede, si no, a la frecuencia especificada
         else:
             rospy.loginfo("Esperando a recibir una imagen")
-            rospy.Rate(1).sleep()
+            rospy.sleep(1)
 
 if __name__ == "__main__":
     try:

@@ -32,6 +32,7 @@ class GoToAruco(smach.State):
         rospy.sleep(3)
 
         rospy.loginfo(f"Searching for aruco {self.current_aruco_id} or {self.next_aruco_id}")
+        rate = rospy.Rate(30)
         while not rospy.is_shutdown():
             if self.fiducial_transform is not None:
                 aruco_sub.unregister()
@@ -56,6 +57,6 @@ class GoToAruco(smach.State):
                 else :
                     return "skipped"
 
-            rospy.Rate(100).sleep()
+            rate.sleep()
 
         return "failed"

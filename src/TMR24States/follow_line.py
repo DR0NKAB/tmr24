@@ -31,6 +31,7 @@ class FollowLine(smach.State):
         rospy.loginfo("Entering control loop")
         tiempo_muestreo = 0.1
         kp = 0.01
+        rate = rospy.Rate(1/tiempo_muestreo)
         while not rospy.is_shutdown():
             if not math.isnan(self.current_error):
                 rospy.loginfo("Sending control command")
@@ -41,6 +42,6 @@ class FollowLine(smach.State):
             else:
                 movement_pub.publish(Twist())
                 return "succeeded"
-            rospy.sleep(tiempo_muestreo)
+            rate.sleep
 
         return "failed"

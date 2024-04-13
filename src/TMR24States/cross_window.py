@@ -34,6 +34,7 @@ class CrossWindow(smach.State):
         tiempo_muestreo = 0.1
         kp_h = 0.01
         kp_v = 0.01
+        rate = rospy.Rate(1/tiempo_muestreo)
         while not rospy.is_shutdown():
             if math.isnan(self.current_h_error) and math.isnan(self.current_v_error) :
                 rospy.loginfo("Crossing window !!!")
@@ -56,6 +57,6 @@ class CrossWindow(smach.State):
 
                 movement_pub.publish(movement_msg)
                 rospy.loginfo(f"Command was : {movement_msg}")
-            rospy.sleep(tiempo_muestreo)
+            rate.sleep()
 
         return "failed"
