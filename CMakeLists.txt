@@ -52,6 +52,7 @@ add_message_files(
   FILES
   Window.msg
   Cone.msg
+  Aruco.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -202,7 +203,7 @@ install(DIRECTORY launch/
 
 install(FILES 
   src/ventanas.pt
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 #############

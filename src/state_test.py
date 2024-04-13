@@ -4,7 +4,7 @@ import smach
 from TMR24States.start import Start
 from TMR24States.finish import Finish
 
-from TMR24States.go_to_aruco import GoToAruco
+from TMR24States.cross_window import CrossWindow
 
 if __name__ == "__main__":
     try : 
@@ -13,19 +13,19 @@ if __name__ == "__main__":
         sm = smach.StateMachine(outcomes=["completed"])
 
         with sm:
-            smach.StateMachine.add( "START", Start(), 
-                                   transitions={"succeeded":"GOTOARUCO_0",
-                                                "failed":"FINISH"} )
             
-            smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200, -45), 
-                                   transitions={"succeeded":"GOTOARUCO_200",
-                                                "skipped":"FINISH",
-                                                "failed":"FINISH"} )
+            smach.StateMachine.add( "START", Start(), 
+                                   transitions={"succeeded":"CROSSWINDOW",
+                                                "failed":"ERROR"} ) 
+
+            smach.StateMachine.add( "CROSSWINDOW", CrossWindow(), 
+                                   transitions={"succeeded":"FINISH",
+                                                "failed":"ERROR"} )
             
             smach.StateMachine.add( "FINISH", Finish(), 
                                    transitions={"ended":"completed"} )
 
-            smach.StateMachine.add( "FINISH", Finish(), 
+            smach.StateMachine.add( "ERROR", Finish(), 
                                    transitions={"ended":"completed"} )
 
         result = sm.execute()

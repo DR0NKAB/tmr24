@@ -42,35 +42,11 @@
         <remap from="camera_info" to="$(arg camera)/camera_info"/>
     </node>
 
-    <!-- WINDOW DETECT -->
-    <node pkg="tmr24" type="window_detect.py" name="window_detect" output="screen">
-        <remap from="camera/compressed" to="/bebop/image_raw/compressed"/>
-    </node>
-
-    <!-- CONE DETECT -->
-    <node pkg="tmr24" type="cone_detect.py" name="cone_detect" output="screen">
-        <remap from="camera/compressed" to="/bebop/image_raw/compressed"/>
-    </node>
-
-    <!-- VELOCITY SENDER -->
-    <node pkg="tmr24" type="vel_publisher.py" name="vel_publisher" output="screen">
-    </node>
-
     <!-- display nodes for every process suscribed to a camera -->
 
     <!-- IMAGE VIEW ARUCOS -->
     <node pkg="image_view" type="image_view" name="image_view_arucos" output="screen">
         <remap from="image" to="/fiducial_images"/>
-    </node>
-
-    <!-- IMAGE VIEW WINDOWS -->
-    <node pkg="image_view" type="image_view" name="image_view_windows" output="screen">
-        <remap from="image" to="/window_detect/detections"/>
-    </node>
-
-    <!-- IMAGE VIEW CONE -->
-    <node pkg="image_view" type="image_view" name="image_view_cone" output="screen">
-        <remap from="image" to="/cone_detect/detections"/>
     </node>
 
 </launch>

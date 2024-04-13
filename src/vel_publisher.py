@@ -26,10 +26,12 @@ def vel_publisher():
     pygame.joystick.init()
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
+
     quiet_zone = 0.4 # any negative number = no quiet zone and always override input from nodes
+    vel_limit = 0.1 #Limit for fields of linear, to avoid moving bebop faster than this
     
     rospy.loginfo("Nodo publicador de velocidades iniciado")
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(5)
     while not rospy.is_shutdown():
 
         override = False
@@ -50,11 +52,6 @@ def vel_publisher():
             takeoff_pub.publish(Empty())
         elif button_states[1] == 1:
             rospy.loginfo("Sending forced hover")
-            msg = Twist()
-            msg.linear.x = 0
-            msg.linear.y = 0
-            msg.linear.z = 0
-            msg.angular.z = 0
             cmd_vel_pub.publish(Twist())
         elif override:
             rospy.loginfo("Forcing manual input")
@@ -66,7 +63,22 @@ def vel_publisher():
             cmd_vel_pub.publish(msg)
         else:
             if current_msg is not None:
-                cmd_vel_pub.publish(current_msg)
+                msg = Twist()
+                
+                fields = [current_msg.linear.x, current_msg.linear.y, current_msg.linear.z, current_msg.angular.z]
+                for i, field in enumerate(fields):
+                    if field > vel_limit:
+                        rospy.loginfo(f"Limitting field number : {i}")
+                        fields[i] = vel_limit
+                    if field < -vel_limit:
+                        fields[i] = -vel_limit
+
+                msg.linear.x = fields[0]
+                msg.linear.y = fields[1]
+                msg.linear.z = fields[2]
+                msg.angular.z = fields[3]
+
+                cmd_vel_pub.publish(msg)
 
         rate.sleep()
 
