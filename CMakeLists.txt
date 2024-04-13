@@ -170,6 +170,7 @@ catkin_install_python(PROGRAMS
   src/vel_publisher.py
   src/line_detect.py
   src/joy_controller.py
+  src/aruco_detect.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -197,6 +198,11 @@ catkin_install_python(PROGRAMS
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+install(FILES 
+  src/ventanas.pt
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 #############
