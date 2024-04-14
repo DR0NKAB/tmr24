@@ -94,7 +94,7 @@ def window_detect():
                 mensaje.y2 = y2
 
                 mensaje.horizontal_error = frame.shape[1] / 2 - (x2 + x1) / 2
-                mensaje.vertical_error = frame.shape[0] / 2 - (y2 + y1) /2
+                mensaje.vertical_error = frame.shape[0] / 2 - y2 
                 window_pub.publish(mensaje)
             else:
                 print("No window found")

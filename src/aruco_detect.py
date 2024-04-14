@@ -1,7 +1,7 @@
 import rospy
+import smach
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import Image
-from fiducial_msgs.msg import FiducialTransform
 from tmr24.msg import Aruco
 
 import cv2
@@ -10,11 +10,12 @@ from cv_bridge import CvBridge
 
 latest_message = None
 
+
 def callback(message):
     global latest_message
     latest_message = message
 
- # Fórmula para calcular el ángulo según el pixel en la coordenada y
+# Fórmula para calcular el ángulo según el pixel en la coordenada y
 def calcular_angulo(y_pixel):
     x = y_pixel
     return 85 - 0.0582642 * x + 0.00153083 * x**2 - 0.0000191457 * x**3 + \
@@ -22,16 +23,16 @@ def calcular_angulo(y_pixel):
 
 def aruco_detect():
     rospy.init_node("aruco_detect")
-    rospy.loginfo("Nodo de deteccion de arucos incializando")
+    rospy.loginfo("Ndo de deteccion de arucos incializando")
 
-    aruco_pub = rospy.Publisher("fiducial_transforms", Aruco, queue_size=10)
-    detection_pub = rospy.Publisher("fiducial_images", Image, queue_size=10)
-    rospy.Subscriber("camera/compressed", CompressedImage, callback)
+    aruco_pub = rospy.Publisher("aruco_detect/arucos", Aruco, queue_size=10)
+    detection_pub = rospy.Publisher("aruco_detect/detections", Image, queue_size=10)
+    rospy.Subscriber("/bebop/image_raw", Image, callback)
     rospy.sleep(1)
 
     bridge = CvBridge()
     rospy.loginfo("Deteccion de arucos iniciada")
-    
+        
     rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         if latest_message is not None:
@@ -41,14 +42,14 @@ def aruco_detect():
 
             # Altura del dron conocida
             altura_dron = 1.5  # Supongamos que la altura es de 1.5 metros
-            
-            aruco_dict = aruco.Dictionary_get(aruco.DICT_5X5_1000)
-            parameters = aruco.DetectorParameters_create()
+                
+            aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_5X5_1000)
+            parameters = cv2.aruco.DetectorParameters_create()
 
             midpoint_x=frame_orig.shape[0]/2
             midpoint_y=frame_orig.shape[1]/2
 
-            corners, ids, rejectedImgPoints = aruco.detectMarkers(frame_orig, aruco_dict, parameters=parameters)
+            corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(frame_orig, aruco_dict, parameters=parameters)
 
             if ids is not None:
                 for i in range(len(ids)):
@@ -82,16 +83,16 @@ def aruco_detect():
                     data_message.error_yaw = midpoint_x-center_x
                     data_message.distance = distancia
                     aruco_pub.publish(data_message)
-        rate.sleep()
+            rate.sleep()
 
 
-            frame_markers = aruco.drawDetectedMarkers(frame.copy(), corners, ids)
+            frame_markers = cv2.aruco.drawDetectedMarkers(frame_orig, corners, ids)
 
-            # Mostrar la imagen con los marcadores
-            cv2.imshow('Detección ArUco', frame_markers)
+                # Mostrar la imagen con los marcadores
+                # cv2.imshow('Detección ArUco', frame_markers)
 
-            ############################################################################
-            
+                ############################################################################
+                
             rate.sleep() # comentado, procesa tan rapido como puede, si no, a la frecuencia especificada
         else:
             rospy.loginfo("Esperando a recibir una imagen")
@@ -103,4 +104,4 @@ if __name__ == "__main__":
     except rospy.ROSInterruptException:
         pass
 
-    ###109.6mm
+        ###109.6mm
