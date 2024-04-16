@@ -18,6 +18,7 @@ def vel_publisher():
     land_pub = rospy.Publisher("bebop/land", Empty, queue_size=10)
     takeoff_pub = rospy.Publisher("bebop/takeoff", Empty, queue_size=10)
     cmd_vel_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
+    continue_pub = rospy.Publisher("/state_machine/continue_mission", Empty, queue_size=10)
     vel_sub = rospy.Subscriber("/vel_publisher/set_vel", Twist, callback)
     rospy.sleep(1)
 
@@ -28,10 +29,10 @@ def vel_publisher():
     joystick.init()
 
     quiet_zone = 0.4 # any negative number = no quiet zone and always override input from nodes
-    vel_limit = 0.1 #Limit for fields of linear, to avoid moving bebop faster than this
+    vel_limit = 1 #Limit for fields of linear and angular, to avoid moving bebop faster than this
     
     rospy.loginfo("Nodo publicador de velocidades iniciado")
-    rate = rospy.Rate(5)
+    rate = rospy.Rate(20) #bebop safety auto stops on rate < 10 hz, 
     while not rospy.is_shutdown():
 
         override = False
@@ -50,17 +51,30 @@ def vel_publisher():
             rospy.loginfo("Sending forced takeoff and hover")
             cmd_vel_pub.publish(Twist())
             takeoff_pub.publish(Empty())
-        elif button_states[1] == 1:
-            rospy.loginfo("Sending forced hover")
-            cmd_vel_pub.publish(Twist())
+        elif button_states[7] == 1:
+            rospy.loginfo("Sending continue mission message")
+            continue_pub.publish(Empty())
         elif override:
-            rospy.loginfo("Forcing manual input")
-            msg = Twist()
-            msg.linear.x = -axis_values[4]
-            msg.linear.y = -axis_values[3]
-            msg.linear.z = -axis_values[1]
-            msg.angular.z = -axis_values[0]
-            cmd_vel_pub.publish(msg)
+            rospy.loginfo("Changing to manual input")
+            manual = True
+            while (not rospy.is_shutdown()) and manual:
+                for event in pygame.event.get():
+                    continue
+                axis_values = [joystick.get_axis(i) for i in range(joystick.get_numaxes())]
+                button_states = [joystick.get_button(i) for i in range(joystick.get_numbuttons())]
+
+                msg = Twist()
+                msg.linear.x = -axis_values[4]
+                msg.linear.y = -axis_values[3]
+                msg.linear.z = -axis_values[1]
+                msg.angular.z = -axis_values[0]
+                cmd_vel_pub.publish(msg)
+
+                if button_states[1] == 1:
+                    rospy.loginfo("Back to automatic input")
+                    manual = False
+
+                rate.sleep()
         else:
             if current_msg is not None:
                 msg = Twist()

@@ -17,9 +17,9 @@ def cone_detect():
     rospy.init_node("cone_detect")
     rospy.loginfo("Nodo de deteccion de conos incializando")
 
-    cone_pub = rospy.Publisher("cone_detect/cone_pos", Cone, queue_size=10)
+    cone_pub = rospy.Publisher("cone_detect/cones", Cone, queue_size=10)
     image_pub = rospy.Publisher("cone_detect/detections", Image, queue_size=10)
-    rospy.Subscriber("camera/compressed", CompressedImage, callback)
+    rospy.Subscriber("bebop/image_raw/compressed", CompressedImage, callback)
     rospy.sleep(1)
 
     bridge = CvBridge()
@@ -59,8 +59,8 @@ def cone_detect():
 
                     rospy.loginfo(f"Las coordenadas del centro del cono son {cX}, {cY} con area : {cv2.contourArea(c)}")
                     msg = Cone()
-                    msg.horizontal_error = frame.shape[1] - cX
-                    msg.vertical_error = frame.shape[0] - cY
+                    msg.horizontal_error = frame.shape[1] // 2 - cX
+                    msg.vertical_error = frame.shape[0] // 2 - cY
                     cone_pub.publish(msg)
                     image_pub.publish(bridge.cv2_to_imgmsg(frame_orig, encoding="bgr8"))
                 else:

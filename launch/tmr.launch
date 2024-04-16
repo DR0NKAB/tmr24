@@ -1,20 +1,4 @@
 <launch>
-
-    <!-- BEBOP -->
-    <arg name="namespace" default="bebop" />
-    <arg name="ip" default="192.168.42.1" />
-    <arg name="drone_type" default="bebop1" /> 
-    <arg name="config_file" default="$(find bebop_driver)/config/defaults.yaml" />
-    <arg name="camera_info_url" default="package://bebop_driver/data/$(arg drone_type)_camera_calib.yaml" />
-    <group ns="$(arg namespace)">
-        <node pkg="bebop_driver" name="bebop_driver" type="bebop_driver_node" output="screen">
-            <param name="camera_info_url" value="$(arg camera_info_url)" />
-            <param name="bebop_ip" value="$(arg ip)" />
-            <rosparam command="load" file="$(arg config_file)" />
-        </node>
-        <include file="$(find bebop_description)/launch/description.launch" />
-    </group> 
-
     <!-- ARUCO DETECT -->
     <arg name="camera" default="/bebop"/> <!-- namespace for camera input -->
     <arg name="image" default="image_raw"/>
@@ -26,7 +10,6 @@
     <arg name="ignore_fiducials" default="" /> <!-- arucos a ignorar -->
     <arg name="fiducial_len_override" default="" />
     <arg name="verbose" default="false"/>
-
     <node pkg="aruco_detect" name="aruco_detect"
         type="aruco_detect" output="screen" respawn="false">
         <param name="image_transport" value="$(arg transport)"/>
@@ -42,15 +25,43 @@
         <remap from="camera_info" to="$(arg camera)/camera_info"/>
     </node>
 
-    <!-- NODE SMACH FOR STATE TEST -->
-    <node pkg="tmr24" type="state_test.py" name="bebop_smach" output="screen"></node>
+    <!-- WINDOW DETECT -->
+    <node pkg="tmr24" type="window_detect.py" name="window_detect" output="log"/>
 
-    <!-- BEBOP VEL PUBLISHER -->
-    <node pkg="tmr24" type="vel_publisher.py" name="vel_publi" output="screen"></node>
+    <!-- CONE DETECT -->
+    <node pkg="tmr24" type="cone_detect.py" name="cone_detect" output="log"/>
 
-    <!-- IMAGE VIEW -->
-    <node pkg="image_view" type="image_view" name="image_view" output="screen">
+    <!-- LINE FOLLOWER -->
+    <node pkg="tmr24" type="line_detect.py" name="line_detect" output="log"/>
+
+    <!-- VELOCITY SENDER -->
+    <node pkg="tmr24" type="vel_publisher.py" name="vel_publisher" output="screen"/>
+
+    <!-- STATE MACHINE -->
+    <node pkg="tmr24" type="bebop_smach.py" name="state_machine" output="screen"/>
+
+    <!-- ############################################################################## -->
+    <!-- #           display nodes for every process suscribed to a camera            # -->
+    <!-- ############################################################################## -->
+
+    <!-- IMAGE VIEW ARUCOS -->
+    <node pkg="image_view" type="image_view" name="image_view_arucos" output="screen">
         <remap from="image" to="/fiducial_images"/>
+    </node>
+
+    <!-- IMAGE VIEW WINDOW DETECT -->
+    <node pkg="image_view" type="image_view" name="image_view_windows" output="screen">
+        <remap from="image" to="/window_detect/detections"/>
+    </node>
+
+    <!-- IMAGE VIEW CONE -->
+    <node pkg="image_view" type="image_view" name="image_view_cone" output="screen">
+        <remap from="image" to="/cone_detect/detections"/>
+    </node>
+
+    <!-- IMAGE VIEW LINE DETECTOR -->
+    <node pkg="image_view" type="image_view" name="image_view_line" output="screen">
+        <remap from="image" to="/line_detect/detections"/>
     </node>
 
 </launch>

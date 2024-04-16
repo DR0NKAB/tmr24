@@ -4,6 +4,8 @@ import math
 from geometry_msgs.msg import Twist
 from tmr24.msg import Window
 
+target_area = 100000
+
 class CrossWindow(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["succeeded","failed"])
@@ -13,9 +15,10 @@ class CrossWindow(smach.State):
         self.current_area = 0
 
     def callback(self, message):
+        global target_area
         self.current_h_error = message.horizontal_error
         self.current_v_error = message.vertical_error
-        self.current_fw_error = 100000 - message.area
+        self.current_fw_error = target_area - message.area
         self.current_area = message.area
 
     def execute(self, userdata):

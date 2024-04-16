@@ -3,20 +3,37 @@ import smach
 import math
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64
+from fiducial_msgs.msg import FiducialTransformArray
+
+aruco_id_to_end = 900
 
 class FollowLine(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["succeeded","failed"])
         self.current_error = 0
+        self.current_red_area = 0
+        self.aruco_found = False
 
-    def callback(self, message):
+    def line_error_callback(self, message):
         self.current_error = message.data
 
+    def red_area_callback(self, message):
+        self.current_red_area = message.data
+
+    def aruco_callback(self, message):
+        global aruco_id_to_end
+        for transform in message.transforms:
+            if transform.fiducial_id == aruco_id_to_end:
+                self.aruco_found = True
+
     def execute(self, userdata):
+        global aruco_id_to_end
         rospy.loginfo("FOLLOWLINE state executing")
         movement_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
         camera_pub = rospy.Publisher("/bebop/camera_control", Twist, queue_size=10)
-        line_error_sub = rospy.Subscriber("/line_follower/line_error", Float64, self.callback)
+        line_error_sub = rospy.Subscriber("/line_follower/line_error", Float64, self.line_error_callback)
+        red_area_sub = rospy.Subscriber("/line_follower/red_area", Float64, self.red_area_callback)
+        aruco_sub = rospy.Subscriber("/fiducial_transforms", FiducialTransformArray, self.aruco_callback)
         rospy.sleep(1)
 
         camera_angle = -90
@@ -30,18 +47,27 @@ class FollowLine(smach.State):
 
         rospy.loginfo("Entering control loop")
         tiempo_muestreo = 0.1
-        kp = 0.01
+        kp = 0.001
         rate = rospy.Rate(1/tiempo_muestreo)
         while not rospy.is_shutdown():
-            if not math.isnan(self.current_error):
-                rospy.loginfo("Sending control command")
-                movement_msg = Twist()
-                movement_msg.linear.y = kp * self.current_error
-                movement_pub.publish(movement_msg)
-                rospy.loginfo(f"Command was : {movement_msg}")
-            else:
-                movement_pub.publish(Twist())
-                return "succeeded"
-            rate.sleep
 
+            if self.current_red_area > 10000:
+                rospy.loginfo("Possible window detected, terminating state")
+                rospy.loginfo("Hovering for 3 seconds and moving to next state")
+                movement_pub.publish(Twist())
+                rospy.sleep(3)
+                return "succeeded"
+            elif self.aruco_found : 
+                rospy.loginfo(f"Aruco with id {aruco_id_to_end} found, leaving state.")
+                rospy.loginfo("Hovering for 3 seconds and moving to next state")
+                movement_pub.publish(Twist())
+                rospy.sleep(3)
+                return "succeeded"
+            else:
+                msg = Twist()
+                msg.linear.x = 0.05
+                msg.linear.y = kp * self.current_error
+                movement_pub.publish(msg)
+            
+            rate.sleep()
         return "failed"

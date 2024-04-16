@@ -27,7 +27,7 @@ def aruco_detect():
 
     aruco_pub = rospy.Publisher("aruco_detect/arucos", Aruco, queue_size=10)
     detection_pub = rospy.Publisher("aruco_detect/detections", Image, queue_size=10)
-    rospy.Subscriber("/bebop/image_raw", Image, callback)
+    rospy.Subscriber("bebop/image_raw/compressed", CompressedImage, callback)
     rospy.sleep(1)
 
     bridge = CvBridge()

@@ -10,7 +10,6 @@ from ultralytics import YOLO
 
 opc = 1 # opc 1 normal, 2 obstaculo
 
-
 latest_message = None
 
 def callback(message):
@@ -38,41 +37,33 @@ def window_detect():
             class_to_detect = 0
             tipos = [class_to_detect]
             frame = bridge.compressed_imgmsg_to_cv2(latest_message, desired_encoding="bgr8")
+
             ############ Filtros ################
 
-            # parametros de filtro HSV 
-            h_min1 = 0
-            h_max1 = 8
-            s_min1 = 86
-            s_max1 = 250
-            v_min1 = 39
-            v_max1 = 255
-            h_min2 = 150
-            h_max2 = 200
-            s_min2 = 74
-            s_max2 = 255
-            v_min2 = 60
-            v_max2 = 255
-
             imgHSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            #naranja
-            mask1 = cv2.inRange(imgHSV, (h_min1, s_min1, v_min1), (h_max1, s_max1, v_max1))
-            #rojo
-            mask2 = cv2.inRange(imgHSV, (h_min2, s_min2, v_min2), (h_max2, s_max2, v_max2))
+
+            # naranja
+            hsv_min1 = [0, 86, 39]
+            hsv_max1 = [8, 250, 255]
+            mask1 = cv2.inRange(imgHSV, np.array(hsv_min1), np.array(hsv_max1))
+
+            # rojo
+            hsv_min2 = [150, 74, 60]
+            hsv_max2 = [200, 255, 255]
+            mask2 = cv2.inRange(imgHSV, np.array(hsv_min2), np.array(hsv_max2))
 
             frame_with_filter = np.zeros_like(imgHSV)
             frame_with_filter[(mask1 > 0) | (mask2 > 0)] = [0, 0, 255]
 
-
             #####################################
-            windows = model.predict( frame_with_filter, classes=tipos, verbose=False, conf=0.40)[0]
+
+            predictions = model.predict( frame_with_filter, classes=tipos, verbose=False, conf=0.40)[0]
 
             mensaje = Window()
-
             max_area = 0
             max_box = None
 
-            for box in windows.boxes.xyxy:
+            for box in predictions.boxes.xyxy:
                 x1, y1, x2, y2 = box.int()
                 area = (x2 - x1) * (y2 - y1)
                 if area > max_area:
@@ -80,11 +71,13 @@ def window_detect():
                     max_box = box
                         
             if max_box is not None:
-                print("Found a max window with area : ", max_area.numpy())
-                print(windows.speed)
+                rospy.loginfo("Found a max window with area : ", max_area.numpy())
+                rospy.loginfo(predictions.speed)
+                
                 x1, y1, x2, y2 = max_box.int()
-                print("ancho =",x2 - x1)
-                print("alto =",y2 - y1)
+                rospy.loginfo("ancho =",x2 - x1)
+                rospy.loginfo("alto =",y2 - y1)
+
                 mensaje.type = "normal"
                 mensaje.area = max_area.numpy()
                 mensaje.x1 = x1
@@ -99,8 +92,8 @@ def window_detect():
             else:
                 print("No window found")
             
-            # window_pub.publish(mensaje)
-            detection_pub.publish( bridge.cv2_to_imgmsg(windows.plot(), encoding="bgr8") )
+            window_pub.publish(mensaje)
+            detection_pub.publish( bridge.cv2_to_imgmsg(predictions.plot(), encoding="bgr8") )
             # rate.sleep() # While commented, it will process as fast as it can, otherwise, at the frecuency provided
         else:
             print("Waiting for an image to be received")
