@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
         with sm:
             smach.StateMachine.add( "START", Start(), 
-                                   transitions={"succeeded":"GOTOARUCO_0",
+                                   transitions={"succeeded":"FOLLOWLINE_1",
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200, -45), 
@@ -63,6 +63,7 @@ if __name__ == "__main__":
                                    transitions={"ended":"completed"} )
 
         result = sm.execute()
+
         rospy.loginfo("State machine node ended with result : ", result)
     except rospy.ROSInterruptException:
         pass

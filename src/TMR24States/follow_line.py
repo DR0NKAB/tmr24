@@ -29,14 +29,14 @@ class FollowLine(smach.State):
     def execute(self, userdata):
         global aruco_id_to_end
         rospy.loginfo("FOLLOWLINE state executing")
-        movement_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
+        movement_pub = rospy.Publisher("/vel_publisher/set_vel", Twist, queue_size=10)
         camera_pub = rospy.Publisher("/bebop/camera_control", Twist, queue_size=10)
-        line_error_sub = rospy.Subscriber("/line_follower/line_error", Float64, self.line_error_callback)
-        red_area_sub = rospy.Subscriber("/line_follower/red_area", Float64, self.red_area_callback)
+        line_error_sub = rospy.Subscriber("/line_detect/lateral_error", Float64, self.line_error_callback)
+        red_area_sub = rospy.Subscriber("/line_detect/red_area", Float64, self.red_area_callback)
         aruco_sub = rospy.Subscriber("/fiducial_transforms", FiducialTransformArray, self.aruco_callback)
         rospy.sleep(1)
 
-        camera_angle = -90
+        camera_angle = -60
         rospy.loginfo(f"Setting camera angle to {camera_angle}")
         camera_msg = Twist()
         camera_msg.angular.y = camera_angle
@@ -47,8 +47,10 @@ class FollowLine(smach.State):
 
         rospy.loginfo("Entering control loop")
         tiempo_muestreo = 0.1
-        kp = 0.001
+        kp = 0.00015
+        kd = 0.001
         rate = rospy.Rate(1/tiempo_muestreo)
+        error_anterior = 0
         while not rospy.is_shutdown():
 
             if self.current_red_area > 10000:
@@ -65,9 +67,14 @@ class FollowLine(smach.State):
                 return "succeeded"
             else:
                 msg = Twist()
-                msg.linear.x = 0.05
+                msg.linear.x = 0.03
                 msg.linear.y = kp * self.current_error
+
+                msg.linear.y = msg.linear.y + ( kd * (self.current_error - error_anterior) / tiempo_muestreo ) 
+
                 movement_pub.publish(msg)
             
+            error_anterior = self.current_error
             rate.sleep()
+
         return "failed"

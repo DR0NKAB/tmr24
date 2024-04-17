@@ -7,16 +7,21 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge
 
-select_filter = 1 # 1 = rojo, 2 = rojo, 3 = azul (default)
+select_filter = 2 # 1 = rojo, 2 = amarilla, 3 = azul (default)
 
 # Constantes para definir los valores de color según el número de filtro
-COLOR_SET_1 = np.array([92, 59, 211])   # Rojo
-COLOR_SET_2 = np.array([156, 225, 255])   # Amarillo
-COLOR_SET_3 = np.array([117, 81, 89])   # Azul
+COLOR_SET_1_MIN = np.array([0, 86, 39])   # Rojo en HSV
+COLOR_SET_1_MAX = np.array([8, 250, 255])   # Rojo en HSV
 
-SIZE_FILTER_1 = 40  # Tamaño del filtro para COLOR_SET_1
-SIZE_FILTER_2 = 57  # Tamaño del filtro para COLOR_SET_2
-SIZE_FILTER_3 = 20  # Tamaño del filtro para COLOR_SET_3
+COLOR_SET_2_MIN = np.array([25, 115, 9])   # Amarillo en HSV
+COLOR_SET_2_MAX = np.array([32, 250, 255])   # Amarillo en HSV
+
+COLOR_SET_3_MIN = np.array([91, 114, 10])   # Azul en HSV
+COLOR_SET_3_MAX = np.array([128, 251, 255])   # Azul en HSV
+
+#SIZE_FILTER_1_MAX = 40  # Tamaño del filtro para COLOR_SET_1
+#SIZE_FILTER_2_MAX = 57  # Tamaño del filtro para COLOR_SET_2
+#SIZE_FILTER_3_MAX = 20  # Tamaño del filtro para COLOR_SET_3
 
 latest_message = None
 
@@ -27,8 +32,6 @@ def callback(message):
 
 def line_detect():
     global select_filter, latest_message
-    global COLOR_SET_1, COLOR_SET_2, COLOR_SET_3
-    global SIZE_FILTER_1, SIZE_FILTER_2, SIZE_FILTER_3
 
     rospy.init_node("line_detect")
     rospy.loginfo("Nodo de deteccion de linea incializando")
@@ -48,9 +51,10 @@ def line_detect():
 
             ####################################################################################################
 
+            hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             hsv_min1 = [0, 86, 39]
             hsv_max1 = [8, 250, 255]
-            red_masked_frame =  cv2.inRange(frame, np.array(hsv_min1), np.array(hsv_max1))
+            red_masked_frame =  cv2.inRange(hsv_frame, np.array(hsv_min1), np.array(hsv_max1))
             red_area = np.sum(red_masked_frame > 0)
             rospy.loginfo(f"Se encontraron {red_area} pixeles rojos")
 
@@ -60,20 +64,20 @@ def line_detect():
             threshold_value = 50  # Umbral fijo (puedes ajustar según sea necesario)
             kernel_size = 3  # Tamaño de kernel fijo (puedes ajustar según sea necesario)
 
-            selected_color = COLOR_SET_3
-            size_filter = SIZE_FILTER_3
+            lower_color = COLOR_SET_3_MIN
+            upper_color = COLOR_SET_3_MAX
             
             if select_filter == 1:
-                selected_color = COLOR_SET_1
-                size_filter = SIZE_FILTER_1
+                lower_color = COLOR_SET_1_MIN
+                upper_color = COLOR_SET_1_MAX
 
             if select_filter == 2:
-                selected_color = COLOR_SET_2
-                size_filter = SIZE_FILTER_2
+                lower_color = COLOR_SET_2_MIN
+                upper_color = COLOR_SET_2_MAX
 
-            lower_color = selected_color - np.array([size_filter, size_filter, size_filter])
-            upper_color = selected_color + np.array([size_filter, size_filter, size_filter])
-            binary_image = cv2.inRange(frame, lower_color, upper_color)
+            #lower_color = selected_color - np.array([size_filter, size_filter, size_filter])
+            #upper_color = selected_color + np.array([size_filter, size_filter, size_filter])
+            binary_image = cv2.inRange(hsv_frame, lower_color, upper_color)
 
             blurred = cv2.GaussianBlur(binary_image, (kernel_size, kernel_size), 0)
             _, thresh = cv2.threshold(blurred, threshold_value, 255, cv2.THRESH_BINARY)

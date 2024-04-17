@@ -73,6 +73,10 @@ def vel_publisher():
                 if button_states[1] == 1:
                     rospy.loginfo("Back to automatic input")
                     manual = False
+                elif button_states[0] == 1:
+                    rospy.loginfo("Sending hover and forced land")
+                    cmd_vel_pub.publish(Twist())
+                    land_pub.publish(Empty())
 
                 rate.sleep()
         else:
