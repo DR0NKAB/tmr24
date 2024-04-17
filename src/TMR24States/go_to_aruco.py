@@ -1,12 +1,14 @@
 import rospy
 import smach
 import math
+import cv2
 import numpy as np
 from geometry_msgs.msg import Twist
 from fiducial_msgs.msg import FiducialTransformArray
 from fiducial_msgs.msg import FiducialArray
 
 class GoToAruco(smach.State):
+    
     def __init__(self, current_aruco_id, next_aruco_id, camera_angle):
         smach.State.__init__(self, outcomes=["succeeded", "skipped","failed"])
         self.camera_angle = camera_angle
@@ -62,7 +64,7 @@ class GoToAruco(smach.State):
                 kp = 0.0002
                 tolerance = 80
                 zero_error_counter = 0
-                zero_error_limit = 50
+                zero_error_limit = 100
                 sampling_time = 0.1
                 rospy.loginfo("Entrando al control de yaw")
                 yaw_rate = rospy.Rate(1/sampling_time)
@@ -83,28 +85,28 @@ class GoToAruco(smach.State):
                         rospy.loginfo("ESTOY CENTRADO")
                         break
                     yaw_rate.sleep()
+                    
+                blind_frame = 0
+                blind_limit = 15
+                self.latest_transform = None
+                movement_msg=Twist()
+                movement_msg.linear.x=0.02
+                movement_pub.publish(movement_msg)
+                while not rospy.is_shutdown():
+                    if self.latest_transform is not None:
+                        blind_frame = 0
+                        self.latest_transform = None
+                    else:
+                        blind_frame = blind_frame + 1
 
-                if not rospy.is_shutdown():
-                    x_aruco = self.latest_transform.transform.translation.x
-                    z_aruco = self.latest_transform.transform.translation.z
-                    rospy.loginfo(f"Encontrado aruco en x : {x_aruco}, z: {z_aruco}")
-
-                    gain_dtov = 0.14
-                    tiempo_mov = 10
-                    msg = Twist()
-                    msg.linear.x = (z_aruco / tiempo_mov) * gain_dtov 
-
-                    rospy.loginfo("Yendo al aruco")
-                    movement_pub.publish(msg)
-                    rospy.sleep(tiempo_mov)
-
-                    rospy.loginfo("Deteniendo")
-                    movement_pub.publish(Twist())
-
-                    if self.latest_transform.fiducial_id == self.current_aruco_id:
-                        return "succeeded"
-                    else :
-                        return "skipped"
+                    if blind_frame > blind_limit:
+                        movement_pub.publish(Twist())
+                        rospy.sleep(3)
+                        if self.fiducial_id_found == self.current_aruco_id:
+                            return "succeeded"    
+                        else:
+                            return "skipped"
+                    yaw_rate.sleep()
             else: 
                 rospy.loginfo("No encontre un aruco, movere la camara")
                 movement_msg = Twist()

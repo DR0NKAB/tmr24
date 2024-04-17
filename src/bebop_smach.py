@@ -7,16 +7,17 @@ from TMR24States.follow_line import FollowLine
 from TMR24States.cross_window import CrossWindow
 from TMR24States.drop_cone import DropCone
 from TMR24States.finish import Finish
+from TMR24States.aling_to_aruco import AlignToAruco
 
 if __name__ == "__main__":
     try : 
         rospy.init_node("state_machine")
-        rospy.loginfo("Starting state machine node")
+        rospy.loginfo("Starting state machine node") 
         sm = smach.StateMachine(outcomes=["completed"])
 
         with sm:
             smach.StateMachine.add( "START", Start(), 
-                                   transitions={"succeeded":"FOLLOWLINE_1",
+                                   transitions={"succeeded":"CROSSWINDOW",
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200, -45), 
@@ -34,8 +35,12 @@ if __name__ == "__main__":
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "GOTOARUCO_600", GoToAruco(600, -1, -45), 
-                                   transitions={"succeeded":"FOLLOWLINE_1",
+                                   transitions={"succeeded":"ALIGNTOARUCO_600",
                                                 "skipped":"FINISH",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "ALIGNTOARUCO_600", AlignToAruco(600, 90), 
+                                   transitions={"succeeded":"FOLLOWLINE_1",
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "FOLLOWLINE_1", FollowLine(), 

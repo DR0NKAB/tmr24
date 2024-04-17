@@ -15,19 +15,19 @@ if __name__ == "__main__":
         with sm:
             
             smach.StateMachine.add( "START", Start(), 
-                                   transitions={"succeeded":"ARUCOS",
+                                   transitions={"succeeded":"CROSSWINDOW",
                                                 "failed":"ERROR"} ) 
             
-            smach.StateMachine.add( "ARUCOS", GoToAruco(0,100, -30), 
+            smach.StateMachine.add( "CROSSWINDOW", GoToAruco(0,100, -30), 
                                    transitions={"succeeded":"FINISH",
                                                 "skipped":"FINISH",
                                                "failed":"ERROR"} )
-            
             smach.StateMachine.add( "FINISH", Finish(), 
                                    transitions={"ended":"completed"} )
 
             smach.StateMachine.add( "ERROR", Finish(), 
                                    transitions={"ended":"completed"} )
+            
 
         result = sm.execute()
         rospy.loginfo("State machine node ended with result : ", result)

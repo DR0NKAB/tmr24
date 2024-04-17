@@ -172,7 +172,6 @@ catkin_install_python(PROGRAMS
   src/line_detect.py
   src/joy_controller.py
   src/aruco_detect.py
-  src/TMR24States/go_to_aruco.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

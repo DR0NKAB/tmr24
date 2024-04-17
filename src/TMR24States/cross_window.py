@@ -13,9 +13,13 @@ class CrossWindow(smach.State):
         self.current_v_error = 0
         self.current_fw_error = 0
         self.current_area = 0
+        self.back_h_error = 0
+        self.back_v_error = 0
 
     def callback(self, message):
         global target_area
+        self.back_h_error = self.current_h_error
+        self.back_v_error = self.current_v_error
         self.current_h_error = message.horizontal_error
         self.current_v_error = message.vertical_error
         self.current_fw_error = target_area - message.area
@@ -42,6 +46,8 @@ class CrossWindow(smach.State):
         kp_h = 0.00007
         kp_v = 0.0003
         kp_fw = 0.0000002
+        kd_h = 0.00017
+        kd_v = 0.0001
         rate = rospy.Rate(1/tiempo_muestreo)
         zero_error_h_counter = 0
         zero_error_v_counter = 0
@@ -49,10 +55,10 @@ class CrossWindow(smach.State):
         minimal_counter = 200
         h_tolerance = 50
         v_tolerance = 20
-        fw_tolerance = 10000
+        fw_tolerance = 15000
         max_area = 60000
         while not rospy.is_shutdown():
-            """
+            
             if self.current_h_error < h_tolerance:
                 zero_error_h_counter = zero_error_h_counter + 1
             else:
@@ -67,6 +73,7 @@ class CrossWindow(smach.State):
                 zero_error_fw_counter = zero_error_fw_counter + 1
             else:
                 zero_error_fw_counter = 0
+            
             """
             if self.current_area > max_area:
                 rospy.loginfo("Yo cruzaria ahora")
@@ -74,29 +81,31 @@ class CrossWindow(smach.State):
                 msg.linear.x = 0.1
                     
                 movement_pub.publish(msg)
-                rospy.sleep(5)
+                rospy.sleep(7)
                 movement_pub.publish(Twist())
+                while(1)
                 return "succeeded"
-                    
+            """
 
             msg = Twist()
-            #if zero_error_h_counter > minimal_counter and zero_error_v_counter > minimal_counter and zero_error_fw_counter > minimal_counter:
-            """
-            if abs(zero_error_h_counter) < h_tolerance and  abs(zero_error_v_counter) < v_tolerance and abs(zero_error_fw_counter) < fw_tolerance:
+            
+            if zero_error_h_counter < minimal_counter and  zero_error_v_counter < minimal_counter:
                 rospy.loginfo("Centrado")
                 
                 msg.linear.x = 0.05
                 
                 movement_pub.publish(msg)
-                rospy.sleep(5)
+                rospy.sleep(7)
                 movement_pub.publish(Twist())
-                return "succeeded"
-                """
-            
+                while not rospy.is_shutdown():
+                    rospy.loginfo("Centrado")
+                    rospy.sleep(1)
 
-            msg.linear.y = kp_h * self.current_h_error
-            msg.linear.z = kp_v * self.current_v_error
-            msg.linear.x = kp_fw * self.current_fw_error
+                return "succeeded"
+
+            msg.linear.y = kp_h * self.current_h_error + kd_h * (self.current_h_error - self.back_h_error) / tiempo_muestreo
+            msg.linear.z = kp_v * self.current_v_error + kd_v * (self.current_v_error - self.back_v_error) / tiempo_muestreo
+            #msg.linear.x = kp_fw * self.current_fw_error
             movement_pub.publish(msg)
             rate.sleep()
 

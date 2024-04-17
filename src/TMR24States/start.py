@@ -33,7 +33,7 @@ class Start(smach.State):
 
             rospy.loginfo("Going to desired height")
             msg=Twist()
-            msg.linear.z = 0.2
+            msg.linear.z = 0.4
             movement_pub.publish(msg)
             rospy.sleep(2)
             movement_pub.publish(Twist())

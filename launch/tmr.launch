@@ -13,6 +13,29 @@
     <node pkg="aruco_detect" name="aruco_detect"
         type="aruco_detect" output="screen" respawn="false">
         <param name="image_transport" value="$(arg transport)"/>
+        <!-- 
+        <param name="adaptativeThresConstant" default="5"/>
+        <param name="adaptativeThresWinSizeMax" default="70"/>
+        <param name="adaptativeThresWinSizeMin" default="3"/>
+        <param name="adaptativeThresWinSizeMax" default="8"/>
+        <param name="cornerRefinementMaxIterations" default="100"/>
+        <param name="cornerRefinementWinSize" default="8"/>
+        <param name="cornerRefinementMInAccuracy" default="0.005"/>
+        <param name="doCornerRefinement" default="True"/>
+        <param name="errorCorrectionRate" default="0.5"/>
+        <param name="minCornerDistanceRate" default="0.1"/>
+        <param name="markerBorderBits" default="1"/>
+        <param name="maxErroneousBitsInBorderRate" default="0.08"/>
+        <param name="minDistanceToBorder" default="1"/>
+        <param name="minMarkerDistanceRate" default="0.1"/>
+        <param name="minMarkerPerimeterRate" default="0.05"/>
+        <param name="maxMarkerPerimeterRate" default="6.0"/>
+        <param name="minOtsuStdDev" default="10.0"/>
+        <param name="perspectiveRemoveIgnoredMarginPerCell" default="0.1"/>
+        <param name="perspectiveRemovePixelPerCell" default="8"/>
+        <param name="polygonalApproxAccuracyRate" default="0.01"/>
+
+        -->
         <param name="publish_images" value="true" />
         <param name="fiducial_len" value="$(arg fiducial_len)"/>
         <param name="dictionary" value="$(arg dictionary)"/>
@@ -25,8 +48,8 @@
         <remap from="camera_info" to="$(arg camera)/camera_info"/>
     </node>
 
-    <!-- WINDOW DETECT -->
-    <node pkg="tmr24" type="window_detect.py" name="window_detect" output="log"/>
+    <!-- WINDOW DETECT 
+    <node pkg="tmr24" type="window_detect.py" name="window_detect" output="log"/> -->
 
     <!-- CONE DETECT -->
     <node pkg="tmr24" type="cone_detect.py" name="cone_detect" output="log"/>
@@ -35,7 +58,7 @@
     <node pkg="tmr24" type="line_detect.py" name="line_detect" output="log"/>
 
     <!-- VELOCITY SENDER -->
-    <node pkg="tmr24" type="vel_publisher.py" name="vel_publisher" output="screen"/>
+    <node pkg="tmr24" type="vel_publisher.py" name="vel_publisher" output="log"/>
 
     <!-- STATE MACHINE -->
     <node pkg="tmr24" type="bebop_smach.py" name="state_machine" output="screen"/>

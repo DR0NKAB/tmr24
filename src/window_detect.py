@@ -71,12 +71,12 @@ def window_detect():
                     max_box = box
                         
             if max_box is not None:
-                rospy.loginfo("Found a max window with area : ", max_area.numpy())
+                rospy.loginfo(f"Found a max window with area : {max_area.numpy()}")
                 rospy.loginfo(predictions.speed)
                 
                 x1, y1, x2, y2 = max_box.int()
-                rospy.loginfo("ancho =",x2 - x1)
-                rospy.loginfo("alto =",y2 - y1)
+                rospy.loginfo(f" ancho = {x2 - x1} ")
+                rospy.loginfo(f"alto = {y2 - y1} ")
 
                 mensaje.type = "normal"
                 mensaje.area = max_area.numpy()
@@ -90,13 +90,13 @@ def window_detect():
                 mensaje.vertical_error = frame.shape[0] / 2 - y2 
                 window_pub.publish(mensaje)
             else:
-                print("No window found")
+                rospy.loginfo("No window found")
             
             window_pub.publish(mensaje)
             detection_pub.publish( bridge.cv2_to_imgmsg(predictions.plot(), encoding="bgr8") )
             # rate.sleep() # While commented, it will process as fast as it can, otherwise, at the frecuency provided
         else:
-            print("Waiting for an image to be received")
+            rospy.loginfo("Waiting for an image to be received")
             rospy.sleep(1)
 
 if __name__ == "__main__":
