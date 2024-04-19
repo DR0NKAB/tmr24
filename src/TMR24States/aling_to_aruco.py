@@ -10,13 +10,14 @@ ancho_pantalla = 856
 alto_pantalla = 450
 
 class AlignToAruco(smach.State):
-    def __init__(self, current_aruco_id, aruco_angle = 0):
+    def __init__(self, current_aruco_id, align_yaw = True, aruco_angle = 0):
         smach.State.__init__(self, outcomes=["succeeded","failed"])
         self.aruco_angle = aruco_angle
         self.current_aruco_id = current_aruco_id
         self.current_horizontal_error = None
         self.current_vertical_error = None
         self.current_yaw_error = None
+        self.align_yaw = align_yaw
 
     def callback_transforms(self, message):
         for transform in message.transforms:
@@ -32,9 +33,14 @@ class AlignToAruco(smach.State):
                 t4 = +1.0 - 2.0 * (y_rotation * y_rotation + z_rotation * z_rotation)
                 yaw_aruco_radian = math.atan2(t3, t4)
                 yaw_aruco_degree = yaw_aruco_radian * (180/math.pi)
-                self.current_yaw_error = ( math.cos(self.aruco_angle * (180/math.pi)) - math.cos(yaw_aruco_radian) ) *100
+                self.current_yaw_error = math.sin((self.aruco_angle) * (math.pi/180)) - math.sin(yaw_aruco_radian)
+                """if yaw_aruco_degree >= self.aruco_angle:
+                    self.current_yaw_error = (-1)*(math.cos((self.aruco_angle - 90) * (math.pi/180)) - math.cos(yaw_aruco_radian) )
+                    
+                else:
+                    self.current_yaw_error = math.cos((self.aruco_angle -90) * (math.pi/180)) - math.cos(yaw_aruco_radian)"""
 
-                rospy.loginfo(f"El Aruco esta a {yaw_aruco_degree} grados")
+                rospy.loginfo(f"Estoy recibiendo {self.aruco_angle} grados")
                 rospy.loginfo(f"El error es de {self.current_yaw_error}")
                 
 
@@ -114,35 +120,38 @@ class AlignToAruco(smach.State):
                 last_error_vertical = self.current_vertical_error
             rate.sleep()
 
-        kp_yaw = 0.0002
-        kd_yaw = 0.0005
+        kp_yaw = 1
+        kd_yaw = 0
         last_error_yaw = 0 
-        tolerance_yaw = (math.cos(0) - math.cos(10))*100 #grados
+        tolerance_yaw = (math.cos(0) - math.cos(10*(math.pi/180))) #grados
+        rospy.loginfo(f"la tolerancia es {tolerance_yaw}")
         #tolerance_yaw = 17
         counter_yaw = 0
         counter_yaw_limit = 50
-        while not rospy.is_shutdown():
+
+        if self.align_yaw:
             rospy.loginfo("Llegue al ciclo de Yaw")
-            if self.current_yaw_error != None:
-                
-                if abs(self.current_yaw_error) < abs(tolerance_yaw):
-                    rospy.loginfo(f"Counter yaw : {counter_yaw}")
-                    counter_yaw = counter_yaw + 1 
+            while not rospy.is_shutdown():
+                if self.current_yaw_error != None:
+                    
+                    if abs(self.current_yaw_error) < abs(tolerance_yaw):
+                        rospy.loginfo(f"Counter yaw : {counter_yaw}")
+                        counter_yaw = counter_yaw + 1 
 
-                if counter_yaw > counter_yaw_limit:
-                    rospy.loginfo("Centrado en YAW, dejando estado")
-                    hover_msg = Twist()
-                    movement_pub.publish(hover_msg)
-                    rospy.sleep(3)
-                    return "succeeded"
+                    if counter_yaw > counter_yaw_limit:
+                        rospy.loginfo("Centrado en YAW, dejando estado")
+                        hover_msg = Twist()
+                        movement_pub.publish(hover_msg)
+                        rospy.sleep(3)
+                        return "succeeded"
 
-                msg = Twist()
-                msg.angular.z = kp_yaw * self.current_yaw_error
-                msg.angular.z = msg.angular.z + (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
+                    msg = Twist()
+                    msg.angular.z = kp_yaw * self.current_yaw_error
+                    msg.angular.z = msg.angular.z + (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
 
-                movement_pub.publish(msg)
-                last_error_yaw = self.current_yaw_error
+                    movement_pub.publish(msg)
+                    last_error_yaw = self.current_yaw_error
 
-            rate.sleep()
+                rate.sleep()
 
         return "failed"

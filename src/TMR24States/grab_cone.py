@@ -1,5 +1,6 @@
 import rospy
 import smach
+from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
 
 class GrabCone(smach.State):
@@ -14,6 +15,7 @@ class GrabCone(smach.State):
         rospy.loginfo("GRABCONE state executing")
         takeoff_pub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
         land_pub = rospy.Publisher("/bebop/land", Empty, queue_size=10)
+        movement_pub = rospy.Publisher("/vel_publisher/set_vel", Twist, queue_size=10)
         continue_sub = rospy.Subscriber("/state_machine/continue_mission", Empty, self.callback)
         rospy.sleep(1)
 
@@ -35,6 +37,14 @@ class GrabCone(smach.State):
 
             rospy.loginfo("Waiting for take off to be completed")
             rospy.sleep(10)
+
+            rospy.loginfo("Going to desired height")
+            msg=Twist()
+            msg.linear.z = 0.3
+            movement_pub.publish(msg)
+            rospy.sleep(2)
+            movement_pub.publish(Twist())
+
             return "succeeded"
         
         return "failed"

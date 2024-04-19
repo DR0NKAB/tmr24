@@ -1,5 +1,6 @@
 import rospy
 import math
+import requests
 import pygame.joystick
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
@@ -47,6 +48,14 @@ def vel_publisher():
             rospy.loginfo("Sending hover and forced land")
             cmd_vel_pub.publish(Twist())
             land_pub.publish(Empty())
+        elif button_states[2] == 1:
+            rospy.loginfo("Droping cone manually")
+            try:
+                respuesta = requests.get("http://192.168.42.100/encender")
+                rospy.sleep(3)
+            except:
+                rospy.loginfo("Error dejando el cono")
+                pass
         elif button_states[3] == 1:
             rospy.loginfo("Sending forced takeoff and hover")
             cmd_vel_pub.publish(Twist())
