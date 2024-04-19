@@ -68,7 +68,7 @@ class CrossWindow(smach.State):
             # opc 2
             if opc == 2:
                 if zero_error_h_counter >= minimal_counter and zero_error_v_counter >= minimal_counter and self.current_area > max_area:
-                    if True:
+                    while True:
                         rospy.loginfo("Yo cruzaria ahora")
                         
                     msg.linear.x = 0.2
@@ -81,7 +81,7 @@ class CrossWindow(smach.State):
             # opc 1
             if opc == 1:
                 if zero_error_h_counter >= minimal_counter and  zero_error_v_counter >= minimal_counter:
-                    if True:
+                    while True:
                         rospy.loginfo("Centrado")
                     
                     msg.linear.x = 0.2

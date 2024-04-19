@@ -30,7 +30,7 @@ def window_detect():
     rospy.Subscriber("bebop/image_raw/compressed", CompressedImage, callback)
     rospy.sleep(1)
 
-    model = YOLO("ventanas.pt")
+    model = YOLO("yolov8n.pt")
     bridge = CvBridge()
     rospy.loginfo("Window detection node started correctly")
 
@@ -60,7 +60,7 @@ def window_detect():
 
             #####################################
 
-            predictions = model.predict( frame_with_filter, classes=tipos, verbose=False, conf=0.40)[0]
+            predictions = model.predict( frame, classes=tipos, verbose=False, conf=0.40)[0]
             frame_to_publish = predictions.plot()
 
             mensaje = None
