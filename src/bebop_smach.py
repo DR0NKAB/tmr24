@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
         with sm:
             smach.StateMachine.add( "START", Start(), 
-                                   transitions={"succeeded":"CROSSWINDOW",
+                                   transitions={"succeeded":"FOLLOWLINE_1",
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200, -45), 
@@ -48,12 +48,12 @@ if __name__ == "__main__":
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "CROSSWINDOW", CrossWindow(), 
-                                   transitions={"succeeded":"FOLLOWLINE_2",
-                                                "failed":"FINISH"} )
-
-            smach.StateMachine.add( "FOLLOWLINE_2", FollowLine(), 
                                    transitions={"succeeded":"GOTOARUCO_900",
                                                 "failed":"FINISH"} )
+
+            #smach.StateMachine.add( "FOLLOWLINE_2", FollowLine(), 
+            #                       transitions={"succeeded":"GOTOARUCO_900",
+            #                                    "failed":"FINISH"} )
             
             smach.StateMachine.add( "GOTOARUCO_900", GoToAruco(900, -1, -45), 
                                    transitions={"succeeded":"DROPCONE",

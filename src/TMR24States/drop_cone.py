@@ -1,5 +1,6 @@
 import rospy
 import smach
+import requests
 from tmr24.msg import Cone
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
@@ -35,9 +36,9 @@ class DropCone(smach.State):
         sampling_time = 0.1
         no_cone_conter = 0
         no_cone_limit_secs = 10
-        tolerance = 30
+        tolerance = 20
         zero_error_conter = 0
-        zero_error_limit = 30
+        zero_error_limit = 50
         kp_v = 0.001
         kp_h = 0.001
         control_rate = rospy.Rate(1/sampling_time)
@@ -52,6 +53,14 @@ class DropCone(smach.State):
                 
                 if zero_error_conter >= zero_error_limit:
                     rospy("Cone centered, leaving cone !")
+                    comando = 'encender'
+                    try:
+                        respuesta = requests.get("http://192.168.16.103/" + comando)
+                        rospy.loginfo("Cone droped")
+                    except:
+                        rospy.loginfo("Error al enviar comando a ESP32")
+
+                    rospy.sleep(3)
                     land_pub.publish(Empty())
                     return "succeeded"
 

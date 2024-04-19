@@ -53,9 +53,13 @@ class FollowLine(smach.State):
         error_anterior = 0
         while not rospy.is_shutdown():
 
-            if self.current_red_area > 10000:
+            if self.current_red_area > 5000:
                 rospy.loginfo("Possible window detected, terminating state")
                 rospy.loginfo("Hovering for 3 seconds and moving to next state")
+                msg = Twist()
+                msg.linear.x = -0.02
+                movement_pub.publish(msg)
+                rospy.sleep(3)
                 movement_pub.publish(Twist())
                 rospy.sleep(3)
                 return "succeeded"
@@ -67,7 +71,7 @@ class FollowLine(smach.State):
                 return "succeeded"
             else:
                 msg = Twist()
-                msg.linear.x = 0.03
+                msg.linear.x = 0.02
                 msg.linear.y = kp * self.current_error
 
                 msg.linear.y = msg.linear.y + ( kd * (self.current_error - error_anterior) / tiempo_muestreo ) 

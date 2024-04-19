@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge
 
-select_filter = 2 # 1 = rojo, 2 = amarilla, 3 = azul (default)
+select_filter = 1 # 1 = rojo, 2 = amarilla, 3 = azul (default)
 
 # Constantes para definir los valores de color según el número de filtro
 COLOR_SET_1_MIN = np.array([0, 86, 39])   # Rojo en HSV

@@ -30,10 +30,13 @@ class AlignToAruco(smach.State):
                 # Convert a quaternion into euler angle (yaw)
                 t3 = +2.0 * ( w_rotation * z_rotation + x_rotation * y_rotation)
                 t4 = +1.0 - 2.0 * (y_rotation * y_rotation + z_rotation * z_rotation)
-                yaw_error_radian = math.atan2(t3, t4)
-                yaw_error_degree = yaw_error_radian * (180/math.pi)
-                rospy.loginfo(f"El Aruco esta a {yaw_error_degree} grados")
-                self.current_yaw_error = self.aruco_angle - yaw_error_degree
+                yaw_aruco_radian = math.atan2(t3, t4)
+                yaw_aruco_degree = yaw_aruco_radian * (180/math.pi)
+                self.current_yaw_error = ( math.cos(self.aruco_angle * (180/math.pi)) - math.cos(yaw_aruco_radian) ) *100
+
+                rospy.loginfo(f"El Aruco esta a {yaw_aruco_degree} grados")
+                rospy.loginfo(f"El error es de {self.current_yaw_error}")
+                
 
     def callback_vertices(self, message):
         for vertices in message.fiducials:
@@ -75,7 +78,7 @@ class AlignToAruco(smach.State):
         
         counter_h = 0
         counter_v = 0
-        tolerance_h_v = 50 #pixeles
+        tolerance_h_v = 20 #pixeles
         counter_h_limit = 50
         counter_v_limit = 50
         rate = rospy.Rate(1/sampling_time)
@@ -111,16 +114,18 @@ class AlignToAruco(smach.State):
                 last_error_vertical = self.current_vertical_error
             rate.sleep()
 
-        kp_yaw = 0.0001
-        #kd_yaw = 0.0005
+        kp_yaw = 0.0002
+        kd_yaw = 0.0005
         last_error_yaw = 0 
-        tolerance_yaw = 10 #grados
+        tolerance_yaw = (math.cos(0) - math.cos(10))*100 #grados
+        #tolerance_yaw = 17
         counter_yaw = 0
         counter_yaw_limit = 50
         while not rospy.is_shutdown():
+            rospy.loginfo("Llegue al ciclo de Yaw")
             if self.current_yaw_error != None:
-
-                if abs(self.current_yaw_error) < tolerance_yaw:
+                
+                if abs(self.current_yaw_error) < abs(tolerance_yaw):
                     rospy.loginfo(f"Counter yaw : {counter_yaw}")
                     counter_yaw = counter_yaw + 1 
 
@@ -133,7 +138,7 @@ class AlignToAruco(smach.State):
 
                 msg = Twist()
                 msg.angular.z = kp_yaw * self.current_yaw_error
-                msg.angular.z = msg.angular.z #+ (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
+                msg.angular.z = msg.angular.z + (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
 
                 movement_pub.publish(msg)
                 last_error_yaw = self.current_yaw_error
