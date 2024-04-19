@@ -50,6 +50,7 @@ def line_detect():
             frame = bridge.compressed_imgmsg_to_cv2(latest_message, desired_encoding="bgr8")
 
             ####################################################################################################
+            # CALCULO AREA ROJA
 
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             hsv_min1 = [0, 86, 39]
@@ -77,7 +78,23 @@ def line_detect():
 
             #lower_color = selected_color - np.array([size_filter, size_filter, size_filter])
             #upper_color = selected_color + np.array([size_filter, size_filter, size_filter])
-            binary_image = cv2.inRange(hsv_frame, lower_color, upper_color)
+            #binary_image = cv2.inRange(hsv_frame, lower_color, upper_color)
+
+            ############ Filtros #############################################################
+
+            # naranja
+            hsv_min1 = [0, 31, 52]
+            hsv_max1 = [7, 250, 255]
+            mask1 = cv2.inRange(hsv_frame, np.array(hsv_min1), np.array(hsv_max1))
+
+            # rojo
+            hsv_min2 = [145, 79, 45]
+            hsv_max2 = [139, 255, 255]
+            mask2 = cv2.inRange(hsv_frame, np.array(hsv_min2), np.array(hsv_max2))
+
+            binary_image = cv2.bitwise_or(mask1, mask2)
+
+            #################################################################################
 
             blurred = cv2.GaussianBlur(binary_image, (kernel_size, kernel_size), 0)
             _, thresh = cv2.threshold(blurred, threshold_value, 255, cv2.THRESH_BINARY)

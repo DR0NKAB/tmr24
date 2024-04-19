@@ -110,7 +110,7 @@ class GoToAruco(smach.State):
             else: 
                 rospy.loginfo("No encontre un aruco, movere la camara")
                 movement_msg = Twist()
-                movement_msg.angular.z = 0.1
+                movement_msg.angular.z = -0.1
                 movement_pub.publish(movement_msg)
                 
             rate.sleep()

@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
         with sm:
             smach.StateMachine.add( "START", Start(), 
-                                   transitions={"succeeded":"GOTOARUCO_900",
+                                   transitions={"succeeded":"GOTOARUCO_0",
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200, -45), 

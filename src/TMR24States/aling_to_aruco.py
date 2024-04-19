@@ -129,29 +129,31 @@ class AlignToAruco(smach.State):
         counter_yaw = 0
         counter_yaw_limit = 50
 
-        if self.align_yaw:
-            rospy.loginfo("Llegue al ciclo de Yaw")
-            while not rospy.is_shutdown():
-                if self.current_yaw_error != None:
-                    
-                    if abs(self.current_yaw_error) < abs(tolerance_yaw):
-                        rospy.loginfo(f"Counter yaw : {counter_yaw}")
-                        counter_yaw = counter_yaw + 1 
+        if not rospy.is_shutdown():
+            if self.align_yaw:
+                rospy.loginfo("Llegue al ciclo de Yaw")
+                while not rospy.is_shutdown():
+                    if self.current_yaw_error != None:
+                        
+                        if abs(self.current_yaw_error) < abs(tolerance_yaw):
+                            rospy.loginfo(f"Counter yaw : {counter_yaw}")
+                            counter_yaw = counter_yaw + 1 
 
-                    if counter_yaw > counter_yaw_limit:
-                        rospy.loginfo("Centrado en YAW, dejando estado")
-                        hover_msg = Twist()
-                        movement_pub.publish(hover_msg)
-                        rospy.sleep(3)
-                        return "succeeded"
+                        if counter_yaw > counter_yaw_limit:
+                            rospy.loginfo("Centrado en YAW, dejando estado")
+                            hover_msg = Twist()
+                            movement_pub.publish(hover_msg)
+                            rospy.sleep(3)
+                            return "succeeded"
 
-                    msg = Twist()
-                    msg.angular.z = kp_yaw * self.current_yaw_error
-                    msg.angular.z = msg.angular.z + (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
+                        msg = Twist()
+                        msg.angular.z = kp_yaw * self.current_yaw_error
+                        msg.angular.z = msg.angular.z + (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
 
-                    movement_pub.publish(msg)
-                    last_error_yaw = self.current_yaw_error
+                        movement_pub.publish(msg)
+                        last_error_yaw = self.current_yaw_error
 
-                rate.sleep()
+                    rate.sleep()
+            return "succeeded"
 
         return "failed"
