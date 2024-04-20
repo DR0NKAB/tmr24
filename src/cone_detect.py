@@ -23,14 +23,19 @@ def cone_detect():
     rospy.sleep(1)
 
     bridge = CvBridge()
-    hsv_min = [20, 50, 0]
-    hsv_max = [30, 200, 255]
+    hsv_min = [25, 115, 9]
+    hsv_max = [32, 250, 255]
+    #hsv_min = [20, 50, 0]
+    #hsv_max = [30, 200, 255]
+
+    
 
     rospy.loginfo("Deteccion de conos iniciada")
     rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         if latest_message is not None:
             frame_orig = bridge.compressed_imgmsg_to_cv2(latest_message, desired_encoding="bgr8")
+            rospy.loginfo(frame_orig.shape[0])
 
             # convertir de BGR a HSV, aplicar blur para el ruido y aplicar filtro para colores entre hsv_min y hsv_max, para obtener los contornos
             frame = cv2.cvtColor(frame_orig, cv2.COLOR_BGR2HSV)
@@ -52,7 +57,7 @@ def cone_detect():
                 # evitar division entre cero con este if
                 if not M["m00"] == 0:
                     cX = int(M["m10"] / M["m00"])  # Esto encuentra el centro horizontal del contorno.
-                    cY = int(M["m01"] / M["m00"])  # Esto encuentra el centro vertical del contorno.
+                    cY = int(M["m01"] / M["m00"] - frame.shape[1]*0.35) # Esto encuentra el centro vertical del contorno.
 
                     cv2.circle(frame_orig, (cX, cY), 5, (0, 255, 255), 5) # esto dibuja un circulo en el centro del contorno
                     frame_orig = cv2.drawContours(frame_orig, [c], -1, (255,255,0), 3) # esto dibuja el contorno en el frame
@@ -60,7 +65,7 @@ def cone_detect():
                     rospy.loginfo(f"Las coordenadas del centro del cono son {cX}, {cY} con area : {cv2.contourArea(c)}")
                     msg = Cone()
                     msg.horizontal_error = frame.shape[1] // 2 - cX
-                    msg.vertical_error = frame.shape[0] // 2 - cY
+                    msg.vertical_error = frame.shape[0] // 2 - cY 
                     cone_pub.publish(msg)
                     image_pub.publish(bridge.cv2_to_imgmsg(frame_orig, encoding="bgr8"))
                 else:

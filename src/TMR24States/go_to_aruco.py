@@ -61,8 +61,8 @@ class GoToAruco(smach.State):
         while not rospy.is_shutdown():
             if self.latest_transform is not None:
 
-                kp = 0.0002
-                tolerance = 80
+                kp = 0.0003
+                tolerance = 60
                 zero_error_counter = 0
                 zero_error_limit = 40
                 sampling_time = 0.1
@@ -101,7 +101,6 @@ class GoToAruco(smach.State):
 
                     if blind_frame > blind_limit:
                         movement_pub.publish(Twist())
-                        rospy.sleep(3)
                         if self.fiducial_id_found == self.current_aruco_id:
                             return "succeeded"    
                         else:
@@ -110,7 +109,7 @@ class GoToAruco(smach.State):
             else: 
                 rospy.loginfo("No encontre un aruco, movere la camara")
                 movement_msg = Twist()
-                movement_msg.angular.z = -0.1
+                movement_msg.angular.z = -0.2
                 movement_pub.publish(movement_msg)
                 
             rate.sleep()

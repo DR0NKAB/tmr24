@@ -57,7 +57,7 @@ class FollowLine(smach.State):
                 rospy.loginfo("Possible window detected, terminating state")
                 rospy.loginfo("Hovering for 3 seconds and moving to next state")
                 msg = Twist()
-                msg.linear.x = 0.13
+                msg.linear.x = 0.2
                 msg.linear.y = -0.035
                 movement_pub.publish(msg)
                 rospy.sleep(3)

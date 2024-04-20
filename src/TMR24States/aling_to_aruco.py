@@ -54,7 +54,7 @@ class AlignToAruco(smach.State):
                 self.current_horizontal_error = ancho_pantalla/2 - center_x
 
                 y_cords = [vertices.y0, vertices.y1, vertices.y2, vertices.y3]
-                center_y = int(np.mean(y_cords)) - alto_pantalla*0.2
+                center_y = int(np.mean(y_cords)) - alto_pantalla*0.25
                 self.current_vertical_error = alto_pantalla/2 - center_y
 
     def execute(self, userdata):
@@ -83,21 +83,33 @@ class AlignToAruco(smach.State):
 
         sampling_time = 0.1
 
-        rospy.loginfo(f"Entering XY control loop")
-        kp_h_v = 0.001
-        kd_h_v = 0.001
+        rospy.loginfo(f"Entering XY-Yaw control loop")
+        kp_h = 0.0005
+        kd_h = 0.0008
+
+        kp_v = 0.0007
+        kd_v = 0.0008
+
         last_error_horizontal = 0
         last_error_vertical = 0
         
         counter_h = 0
         counter_v = 0
-        tolerance_h_v = 20 #pixeles
+        tolerance_h_v = 25 #pixeles
         counter_h_limit = 30
         counter_v_limit = 30
+
+        kp_yaw = 1
+        kd_yaw = 0
+        last_error_yaw = 0 
+        tolerance_yaw = (math.cos(0) - math.cos(10*(math.pi/180))) #grados
+        counter_yaw = 0
+        counter_yaw_limit = 30
+
         rate = rospy.Rate(1/sampling_time)
 
         while not rospy.is_shutdown():
-            if self.current_vertical_error != None and self.current_horizontal_error != None:
+            if self.current_vertical_error != None and self.current_horizontal_error != None and self.current_yaw_error != None:
 
                 if abs(self.current_horizontal_error) < tolerance_h_v:
                     rospy.loginfo(f"Counter horizontal : {counter_h}")
@@ -107,60 +119,32 @@ class AlignToAruco(smach.State):
                     rospy.loginfo(f"Counter vertical: {counter_v}")
                     counter_v = counter_v + 1 
 
-                if counter_h > counter_h_limit and counter_v > counter_v_limit :
-                    rospy.loginfo("Centrado en ejes XY, terminando bucle de control")
+                if abs(self.current_yaw_error) < abs(tolerance_yaw):
+                            rospy.loginfo(f"Counter yaw : {counter_yaw}")
+                            counter_yaw = counter_yaw + 1 
+
+                if counter_h > counter_h_limit and counter_v > counter_v_limit and (counter_yaw > counter_yaw_limit or not self.align_yaw):
+                    rospy.loginfo("Centrado en ejes XY-Yaw, terminando bucle de control")
                     hover_msg = Twist()
                     movement_pub.publish(hover_msg)
-                    rospy.sleep(3)
-                    break
+                    return "succeeded"
 
                 msg = Twist()
-                msg.linear.x = kp_h_v * self.current_vertical_error
-                msg.linear.y = kp_h_v * self.current_horizontal_error
+                msg.linear.x = kp_v * self.current_vertical_error
+                msg.linear.y = kp_h * self.current_horizontal_error
 
-                msg.linear.x = msg.linear.x + (kd_h_v * (self.current_vertical_error - last_error_vertical) / sampling_time)
-                msg.linear.y = msg.linear.y + (kd_h_v * (self.current_horizontal_error - last_error_horizontal) / sampling_time)
+                msg.linear.x = msg.linear.x + (kd_v * (self.current_vertical_error - last_error_vertical) / sampling_time)
+                msg.linear.y = msg.linear.y + (kd_h * (self.current_horizontal_error - last_error_horizontal) / sampling_time)
+
+                if self.align_yaw:
+                    msg.angular.z = kp_yaw * self.current_yaw_error
+                    msg.angular.z = msg.angular.z + (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
                 
                 movement_pub.publish(msg)
 
                 last_error_horizontal = self.current_horizontal_error
                 last_error_vertical = self.current_vertical_error
+                last_error_yaw = self.current_yaw_error
             rate.sleep()
-
-        kp_yaw = 1
-        kd_yaw = 0
-        last_error_yaw = 0 
-        tolerance_yaw = (math.cos(0) - math.cos(10*(math.pi/180))) #grados
-        rospy.loginfo(f"la tolerancia es {tolerance_yaw}")
-        #tolerance_yaw = 17
-        counter_yaw = 0
-        counter_yaw_limit = 30
-
-        if not rospy.is_shutdown():
-            if self.align_yaw:
-                rospy.loginfo("Llegue al ciclo de Yaw")
-                while not rospy.is_shutdown():
-                    if self.current_yaw_error != None:
-                        
-                        if abs(self.current_yaw_error) < abs(tolerance_yaw):
-                            rospy.loginfo(f"Counter yaw : {counter_yaw}")
-                            counter_yaw = counter_yaw + 1 
-
-                        if counter_yaw > counter_yaw_limit:
-                            rospy.loginfo("Centrado en YAW, dejando estado")
-                            hover_msg = Twist()
-                            movement_pub.publish(hover_msg)
-                            rospy.sleep(3)
-                            return "succeeded"
-
-                        msg = Twist()
-                        msg.angular.z = kp_yaw * self.current_yaw_error
-                        msg.angular.z = msg.angular.z + (kd_yaw * (self.current_yaw_error - last_error_yaw)/sampling_time)
-
-                        movement_pub.publish(msg)
-                        last_error_yaw = self.current_yaw_error
-
-                    rate.sleep()
-            return "succeeded"
 
         return "failed"
