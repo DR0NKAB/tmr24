@@ -11,7 +11,7 @@
     <arg name="fiducial_len_override" default="" />
     <arg name="verbose" default="false"/>
     <node pkg="aruco_detect" name="aruco_detect"
-        type="aruco_detect" output="screen" respawn="false">
+        type="aruco_detect" output="log" respawn="false">
         <param name="image_transport" value="$(arg transport)"/>
         <!-- 
         <param name="adaptativeThresConstant" default="5"/>

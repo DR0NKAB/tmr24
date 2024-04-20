@@ -40,8 +40,8 @@ class AlignToAruco(smach.State):
                 else:
                     self.current_yaw_error = math.cos((self.aruco_angle -90) * (math.pi/180)) - math.cos(yaw_aruco_radian)"""
 
-                rospy.loginfo(f"Estoy recibiendo {self.aruco_angle} grados")
-                rospy.loginfo(f"El error es de {self.current_yaw_error}")
+                #rospy.loginfo(f"Estoy recibiendo {self.aruco_angle} grados")
+                #rospy.loginfo(f"El error es de {self.current_yaw_error}")
                 
 
     def callback_vertices(self, message):
@@ -54,7 +54,7 @@ class AlignToAruco(smach.State):
                 self.current_horizontal_error = ancho_pantalla/2 - center_x
 
                 y_cords = [vertices.y0, vertices.y1, vertices.y2, vertices.y3]
-                center_y = int(np.mean(y_cords))
+                center_y = int(np.mean(y_cords)) - alto_pantalla*0.2
                 self.current_vertical_error = alto_pantalla/2 - center_y
 
     def execute(self, userdata):
@@ -64,6 +64,13 @@ class AlignToAruco(smach.State):
         aruco_transforms_sub = rospy.Subscriber("/fiducial_transforms", FiducialTransformArray, self.callback_transforms)
         aruco_vertices_sub = rospy.Subscriber("/fiducial_vertices", FiducialArray, self.callback_vertices)
         rospy.sleep(1)
+
+        """rospy.loginfo("Going to desired height")
+        msg=Twist()
+        msg.linear.z = -0.3
+        movement_pub.publish(msg)
+        rospy.sleep(2)
+        movement_pub.publish(Twist())"""
 
         camera_angle = -90
         rospy.loginfo(f"Setting camera angle to {camera_angle}")
@@ -85,8 +92,8 @@ class AlignToAruco(smach.State):
         counter_h = 0
         counter_v = 0
         tolerance_h_v = 20 #pixeles
-        counter_h_limit = 50
-        counter_v_limit = 50
+        counter_h_limit = 30
+        counter_v_limit = 30
         rate = rospy.Rate(1/sampling_time)
 
         while not rospy.is_shutdown():
@@ -127,7 +134,7 @@ class AlignToAruco(smach.State):
         rospy.loginfo(f"la tolerancia es {tolerance_yaw}")
         #tolerance_yaw = 17
         counter_yaw = 0
-        counter_yaw_limit = 50
+        counter_yaw_limit = 30
 
         if not rospy.is_shutdown():
             if self.align_yaw:

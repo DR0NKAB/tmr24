@@ -64,7 +64,7 @@ class GoToAruco(smach.State):
                 kp = 0.0002
                 tolerance = 80
                 zero_error_counter = 0
-                zero_error_limit = 100
+                zero_error_limit = 40
                 sampling_time = 0.1
                 rospy.loginfo("Entrando al control de yaw")
                 yaw_rate = rospy.Rate(1/sampling_time)
@@ -87,7 +87,7 @@ class GoToAruco(smach.State):
                     yaw_rate.sleep()
                     
                 blind_frame = 0
-                blind_limit = 15
+                blind_limit = 10
                 self.latest_transform = None
                 movement_msg=Twist()
                 movement_msg.linear.x=0.02

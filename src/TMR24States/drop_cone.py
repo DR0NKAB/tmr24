@@ -1,7 +1,6 @@
 import rospy
 import smach
 import requests
-from tmr24.msg import Cone
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
 
@@ -11,6 +10,7 @@ class DropCone(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("DROPCONE state executing")
+        movement_pub = rospy.Publisher("/vel_publisher/set_vel", Twist, queue_size=10)
         land_pub = rospy.Publisher("/bebop/land", Empty, queue_size=10)
         rospy.sleep(1)
 
@@ -18,6 +18,11 @@ class DropCone(smach.State):
         
             rospy.loginfo("DROPPING CONE !")
             try:
+                """msg = Twist()
+                msg.linear.x = 0.1
+                movement_pub.publish(msg)
+                rospy.sleep(1)
+                movement_pub.publish(Twist())"""
                 respuesta = requests.get("http://192.168.42.100/encender")
                 rospy.loginfo("Cone droped")
                 rospy.sleep(3)

@@ -20,21 +20,25 @@ if __name__ == "__main__":
                                    transitions={"succeeded":"GOTOARUCO_0",
                                                 "failed":"FINISH"} )
             
-            smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, 200, -45), 
+            smach.StateMachine.add( "GOTOARUCO_0", GoToAruco(0, -1, -45), 
                                    transitions={"succeeded":"GOTOARUCO_200",
                                                 "skipped":"GRABCONE",
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "GOTOARUCO_200", GoToAruco(200, -1, -45), 
-                                   transitions={"succeeded":"GRABCONE",
+                                   transitions={"succeeded":"ALIGNTOARUCO_200",
                                                 "skipped":"FINISH",
+                                                "failed":"FINISH"} )
+            
+            smach.StateMachine.add( "ALIGNTOARUCO_200", AlignToAruco(200, False), 
+                                   transitions={"succeeded":"GRABCONE",
                                                 "failed":"FINISH"} )
             
             smach.StateMachine.add( "GRABCONE", GrabCone(), 
                                    transitions={"succeeded":"GOTOARUCO_600",
                                                 "failed":"FINISH"} )
             
-            smach.StateMachine.add( "GOTOARUCO_600", GoToAruco(600, -1, -45), 
+            smach.StateMachine.add( "GOTOARUCO_600", GoToAruco(600, -1, -60), 
                                    transitions={"succeeded":"ALIGNTOARUCO_600",
                                                 "skipped":"FINISH",
                                                 "failed":"FINISH"} )

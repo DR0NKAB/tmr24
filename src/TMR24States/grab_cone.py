@@ -9,6 +9,7 @@ class GrabCone(smach.State):
         self.continue_mission = False
 
     def callback(self, message):
+        rospy.loginfo("Continue received")
         self.continue_mission = True
 
     def execute(self, userdata):
@@ -19,24 +20,30 @@ class GrabCone(smach.State):
         continue_sub = rospy.Subscriber("/state_machine/continue_mission", Empty, self.callback)
         rospy.sleep(1)
 
-        while not rospy.is_shutdown:
+        """msg = Twist()
+        msg.linear.x = 0.05
+        movement_pub.publish(msg)
+        rospy.sleep(1)
+
+        movement_pub.publish(Twist())"""
+        
+        rospy.loginfo("Sending land to drone")
+        land_pub.publish(Empty())
+        #rospy.sleep(30)
+        self.continue_mission = False
+
+        while not rospy.is_shutdown():
             if self.continue_mission:
                 break
             rospy.loginfo("Waiting for message to continue")
             rospy.sleep(1)
 
         if not rospy.is_shutdown():
-            rospy.loginfo("Sending land to drone")
-            land_pub.publish(Empty())
-            rospy.loginfo("Waiting for take off to be completed")
-            rospy.sleep(10)
-
-        if not rospy.is_shutdown():
             rospy.loginfo("Sending Takeoff to continue")
             takeoff_pub.publish(Empty())
 
             rospy.loginfo("Waiting for take off to be completed")
-            rospy.sleep(10)
+            rospy.sleep(5)
 
             rospy.loginfo("Going to desired height")
             msg=Twist()

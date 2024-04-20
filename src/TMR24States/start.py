@@ -15,7 +15,7 @@ class Start(smach.State):
         rospy.loginfo("START state executing")
         takeoff_pub = rospy.Publisher("/bebop/takeoff", Empty, queue_size=10)
         movement_pub = rospy.Publisher("/vel_publisher/set_vel", Twist, queue_size=10)
-        start_sub = rospy.Subscriber("/state_machine/continue_mission", Empty, self.callback)
+        start_sub = rospy.Subscriber("/state_machine/start_mission", Empty, self.callback)
         rospy.sleep(1)
 
         while not rospy.is_shutdown():
@@ -29,14 +29,14 @@ class Start(smach.State):
             takeoff_pub.publish(Empty())
 
             rospy.loginfo("Waiting for take off to be completed")
-            rospy.sleep(10)
-
+            rospy.sleep(5)
+            """"
             rospy.loginfo("Going to desired height")
             msg=Twist()
             msg.linear.z = 0.3
             movement_pub.publish(msg)
             rospy.sleep(2)
-            movement_pub.publish(Twist())
+            movement_pub.publish(Twist())"""
 
             return "succeeded"
         else:

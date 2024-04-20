@@ -20,6 +20,7 @@ def vel_publisher():
     takeoff_pub = rospy.Publisher("bebop/takeoff", Empty, queue_size=10)
     cmd_vel_pub = rospy.Publisher("/bebop/cmd_vel", Twist, queue_size=10)
     continue_pub = rospy.Publisher("/state_machine/continue_mission", Empty, queue_size=10)
+    start_pub = rospy.Publisher("/state_machine/start_mission", Empty, queue_size=10)
     vel_sub = rospy.Subscriber("/vel_publisher/set_vel", Twist, callback)
     rospy.sleep(1)
 
@@ -60,9 +61,12 @@ def vel_publisher():
             rospy.loginfo("Sending forced takeoff and hover")
             cmd_vel_pub.publish(Twist())
             takeoff_pub.publish(Empty())
-        elif button_states[7] == 1:
-            rospy.loginfo("Sending continue mission message")
+        elif button_states[6] == 1:
+            rospy.loginfo("Sending CONTINUE mission message")
             continue_pub.publish(Empty())
+        elif button_states[7] == 1:
+            rospy.loginfo("Sending START mission message")
+            start_pub.publish(Empty())
         elif override:
             rospy.loginfo("Changing to manual input")
             manual = True
