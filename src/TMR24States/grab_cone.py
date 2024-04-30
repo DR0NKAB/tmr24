@@ -48,8 +48,8 @@ class GrabCone(smach.State):
             rospy.loginfo("Going to desired height")
             msg=Twist()
             msg.linear.z = 0.3
-            msg.linear.y = -0.1
-            msg.linear.x = -0.1
+            msg.linear.y = -0.05
+            msg.linear.x = -0.05
             movement_pub.publish(msg)
             rospy.sleep(2)
             msg=Twist()

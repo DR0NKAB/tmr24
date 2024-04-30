@@ -43,8 +43,8 @@ class AlignToCone(smach.State):
         sampling_time = 0.1
 
         rospy.loginfo(f"Entering XY control loop")
-        kp_h_v = 0.0007
-        kd_h_v = 0.001
+        kp_h_v = 0.0004
+        kd_h_v = 0.0006
         last_error_horizontal = 0
         last_error_vertical = 0
         
